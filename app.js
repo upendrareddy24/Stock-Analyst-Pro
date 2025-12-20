@@ -241,6 +241,32 @@ document.addEventListener('DOMContentLoaded', () => {
             tradeCard.classList.add('hidden');
         }
 
+        // --- VITAL SIGNS RENDER ---
+        if (data.technical_indicators) {
+            const tech = data.technical_indicators;
+
+            // Squeeze
+            const sqEl = document.getElementById('vitalSqueeze');
+            const sqDet = document.getElementById('vitalSqueezeDetail');
+            sqEl.textContent = tech.squeeze.status;
+            sqDet.textContent = tech.squeeze.detail;
+            sqEl.style.color = tech.squeeze.color === 'orange' ? '#fbbf24' : tech.squeeze.color === 'green' ? '#34d399' : tech.squeeze.color === 'red' ? '#f87171' : '#9ca3af';
+
+            // RSI
+            document.getElementById('vitalRSI').textContent = tech.rsi;
+            const rsiBar = document.getElementById('vitalRSIBar');
+            rsiBar.style.width = `${tech.rsi}%`;
+            rsiBar.style.backgroundColor = tech.rsi > 70 ? '#f87171' : tech.rsi < 30 ? '#34d399' : '#fbbf24';
+
+            // Volume
+            document.getElementById('vitalVol').textContent = tech.rel_volume + 'x';
+            document.getElementById('vitalVolDetail').style.color = tech.rel_volume > 1.2 ? '#34d399' : '#9ca3af';
+
+            // MACD
+            document.getElementById('vitalMACD').textContent = tech.macd.status;
+            document.getElementById('vitalMACDDetail').textContent = tech.macd.trend;
+        }
+
         // Render Strategies
         const strategiesList = document.getElementById('strategiesList');
         strategiesList.innerHTML = '';

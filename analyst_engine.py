@@ -41,6 +41,12 @@ class AnalystEngine:
             "priority": self._generate_priority(results, actionable_strategies),
             "master_score": self._calculate_master_score(results, actionable_strategies),
             "trade_plan": self._generate_trade_plan(df, results, actionable_strategies),
+            "technical_indicators": {
+                "squeeze": self._calculate_squeeze(df),
+                "rsi": round(self._calculate_rsi(df), 1),
+                "macd": self._calculate_macd(df),
+                "rel_volume": round(df['Volume'].iloc[-1] / df['Volume'].tail(20).mean(), 2)
+            },
             "personas": results,
             "actionable_strategies": actionable_strategies,
             "recent_news": news[:5] if news else []
@@ -477,6 +483,69 @@ class AnalystEngine:
             "stop_loss": f"${stop_loss:.2f}",
             "target": f"${target_price:.2f}",
             "risk_reward": f"1:{rr_ratio}"
+        }
+
+    def _calculate_squeeze(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Detects if TTM Squeeze is On, Off, or Firing.
+        """
+        # 20 SMA
+        sma20 = df['Close'].rolling(window=20).mean()
+        
+        # Bollinger Bands (2.0 std dev)
+        std_dev = df['Close'].rolling(window=20).std()
+        upper_bb = sma20 + (2.0 * std_dev)
+        lower_bb = sma20 - (2.0 * std_dev)
+        
+        # Keltner Channels (1.5 ATR)
+        atr = (df['High'] - df['Low']).rolling(window=20).mean() # Simple ATR approximation
+        upper_kc = sma20 + (1.5 * atr)
+        lower_kc = sma20 - (1.5 * atr)
+        
+        # Current status
+        curr_upper_bb = upper_bb.iloc[-1]
+        curr_lower_bb = lower_bb.iloc[-1]
+        curr_upper_kc = upper_kc.iloc[-1]
+        curr_lower_kc = lower_kc.iloc[-1]
+        
+        # Squeeze IS ON if BB are INSIDE KC
+        is_squeezing = (curr_upper_bb < curr_upper_kc) and (curr_lower_bb > curr_lower_kc)
+        
+        # Momentum (Linear Reg or just Delta Price for simplicity proxy)
+        # Using simple Delta relative to ATR for color
+        momentum = df['Close'].iloc[-1] - sma20.iloc[-1]
+        
+        if is_squeezing:
+            return {"status": "Squeeze ON", "color": "orange", "detail": "Volatility Compression"}
+        else:
+            # Check previous candle to see if it JUST fired
+            prev_upper_bb = upper_bb.iloc[-2]
+            prev_upper_kc = upper_kc.iloc[-2]
+            was_squeezing = (prev_upper_bb < prev_upper_kc)
+            
+            if was_squeezing:
+                return {"status": "Fired!", "color": "green" if momentum > 0 else "red", "detail": "Explosive Move Started"}
+            
+            return {"status": "Squeeze Off", "color": "gray", "detail": "Normal Volatility"}
+
+    def _calculate_macd(self, df: pd.DataFrame) -> Dict[str, Any]:
+        # EMA 12, 26
+        ema12 = df['Close'].ewm(span=12, adjust=False).mean()
+        ema26 = df['Close'].ewm(span=26, adjust=False).mean()
+        macd_line = ema12 - ema26
+        signal_line = macd_line.ewm(span=9, adjust=False).mean()
+        histogram = macd_line - signal_line
+        
+        curr_hist = histogram.iloc[-1]
+        prev_hist = histogram.iloc[-2]
+        
+        status = "Bullish" if curr_hist > 0 else "Bearish"
+        trend = "Strengthening" if abs(curr_hist) > abs(prev_hist) else "Weakening"
+        
+        return {
+            "value": round(curr_hist, 2),
+            "status": status,
+            "trend": trend
         }
 
 if __name__ == "__main__":
