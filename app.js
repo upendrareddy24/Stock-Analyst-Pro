@@ -10,8 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalBody = document.getElementById('modalBody');
     const closeModal = document.getElementById('closeModal');
     const historyList = document.getElementById('historyList');
+    const bullishList = document.getElementById('bullishList');
 
     let analysisHistory = JSON.parse(localStorage.getItem('stock_history') || '[]');
+    let bullishRadar = JSON.parse(localStorage.getItem('bullish_radar') || '[]');
     let personaWatchlists = JSON.parse(localStorage.getItem('persona_watchlists') || '{}');
 
     const updatePersonaWatchlists = (ticker, personas) => {
@@ -63,6 +65,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
         localStorage.setItem('stock_history', JSON.stringify(analysisHistory));
         renderHistory();
+
+        // Also update Bullish Radar
+        if (consensus.includes("Bullish")) {
+            const radarItem = {
+                ticker,
+                consensus,
+                date: new Date().toLocaleDateString(),
+                timestamp: Date.now()
+            };
+            bullishRadar = bullishRadar.filter(item => item.ticker !== ticker);
+            bullishRadar.unshift(radarItem);
+            bullishRadar = bullishRadar.slice(0, 10);
+            localStorage.setItem('bullish_radar', JSON.stringify(bullishRadar));
+            renderBullishRadar();
+        } else {
+            // If rating changed to non-bullish, remove it
+            const prevLen = bullishRadar.length;
+            bullishRadar = bullishRadar.filter(item => item.ticker !== ticker);
+            if (bullishRadar.length !== prevLen) {
+                localStorage.setItem('bullish_radar', JSON.stringify(bullishRadar));
+                renderBullishRadar();
+            }
+        }
+    };
+
+    const renderBullishRadar = () => {
+        if (bullishRadar.length === 0) {
+            bullishList.innerHTML = '<p class="empty-msg">No recent gems.</p>';
+            return;
+        }
+
+        bullishList.innerHTML = '';
+        bullishRadar.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-item glass radar-item-glow';
+
+            div.innerHTML = `
+                <div class="history-item-header">
+                    <h4>${item.ticker}</h4>
+                    <span class="mini-consensus rating-pill rating-buy">${item.consensus.split(' ')[0]}</span>
+                </div>
+                <div class="date">${item.date}</div>
+            `;
+
+            div.addEventListener('click', () => {
+                tickerInput.value = item.ticker;
+                handleAnalyze(item.ticker);
+            });
+
+            bullishList.appendChild(div);
+        });
     };
 
     const renderHistory = () => {
@@ -216,10 +269,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="modal-books-title">🏆 ${persona}'s Top Picks</span>
                             <div class="watchlist-grid">
                                 ${personaWatchlists[persona].map(item => `
-                                    <div class="watchlist-item glass-low" onclick="document.getElementById('tickerInput').value='${item.ticker}'; document.getElementById('analyzeBtn').click(); document.getElementById('closeModal').click();">
+                                    <div class="watchlist-item glass-low" title="Added: ${item.date}" onclick="document.getElementById('tickerInput').value='${item.ticker}'; document.getElementById('analyzeBtn').click(); document.getElementById('closeModal').click();">
                                         <strong>${item.ticker}</strong>
                                         <span class="mini-rating ${item.rating.includes('Strong') ? 'strong-buy' : 'buy'}">${item.rating}</span>
-                                        <small>${item.date}</small>
                                     </div>
                                 `).join('')}
                             </div>
@@ -247,10 +299,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newsItem = document.createElement('div');
                 newsItem.className = 'news-item glass';
                 newsItem.innerHTML = `
-                    < div class="news-info" >
+                    <div class="news-info">
                         <h4>${item.title}</h4>
                         <p>${item.summary ? item.summary.substring(0, 150) + '...' : 'Recent catalyst update.'}</p>
-                    </div >
+                    </div>
         <div class="news-meta">
             <span class="news-date">${item.date}</span>
             <a href="${item.url}" target="_blank" class="news-link">Read More <i class="fas fa-external-link-alt"></i></a>
@@ -282,4 +334,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial Render
     renderHistory();
+    renderBullishRadar();
 });
