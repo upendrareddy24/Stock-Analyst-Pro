@@ -213,6 +213,34 @@ document.addEventListener('DOMContentLoaded', () => {
             consensusEl.style.background = 'rgba(245, 158, 11, 0.1)';
         }
 
+        // --- MASTER SCORE RENDER ---
+        const scoreContainer = document.getElementById('masterScoreContainer');
+        if (data.master_score) {
+            document.getElementById('masterScoreValue').textContent = data.master_score.value + "/100";
+            document.getElementById('masterScoreLabel').textContent = data.master_score.label;
+            scoreContainer.classList.remove('hidden');
+
+            // Color Logic
+            const val = data.master_score.value;
+            scoreContainer.className = 'master-score-badge'; // reset
+            if (val >= 70) scoreContainer.classList.add('score-high');
+            else if (val >= 40) scoreContainer.classList.add('score-mid');
+            else scoreContainer.classList.add('score-low');
+        } else {
+            scoreContainer.classList.add('hidden');
+        }
+
+        // --- TRADE PLAN RENDER ---
+        const tradeCard = document.getElementById('tradePlanCard');
+        if (data.trade_plan) {
+            document.getElementById('tpEntry').textContent = data.trade_plan.entry_zone;
+            document.getElementById('tpTarget').textContent = data.trade_plan.target;
+            document.getElementById('tpStop').textContent = data.trade_plan.stop_loss;
+            tradeCard.classList.remove('hidden');
+        } else {
+            tradeCard.classList.add('hidden');
+        }
+
         // Render Strategies
         const strategiesList = document.getElementById('strategiesList');
         strategiesList.innerHTML = '';

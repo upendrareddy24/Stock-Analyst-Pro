@@ -57,8 +57,34 @@
                     </div>
                     <div class="priority-details">
                         <p id="priorityReasoning">...</p>
-                        <div class="confidence-meter">
-                            <span>Confidence: <strong id="priorityConfidence">...</strong></span>
+                        <div class="metrics-row">
+                            <div class="confidence-meter">
+                                <span>Confidence: <strong id="priorityConfidence">...</strong></span>
+                            </div>
+                            <div id="masterScoreContainer" class="master-score-badge hidden">
+                                <span class="score-value" id="masterScoreValue">--</span>
+                                <span class="score-label" id="masterScoreLabel">Neutral</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tradePlanCard" class="trade-plan-card hidden">
+                        <div class="trade-header">
+                            <i class="fas fa-chess-board"></i> Trade Plan
+                        </div>
+                        <div class="trade-grid">
+                            <div class="trade-level">
+                                <span>Entry Zone</span>
+                                <strong id="tpEntry">--</strong>
+                            </div>
+                            <div class="trade-level">
+                                <span>Target</span>
+                                <strong id="tpTarget" class="text-success">--</strong>
+                            </div>
+                            <div class="trade-level">
+                                <span>Stop Loss</span>
+                                <strong id="tpStop" class="text-danger">--</strong>
+                            </div>
                         </div>
                     </div>
                 </section>

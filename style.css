@@ -822,3 +822,99 @@ h3 i {
     transform: translateX(4px) scale(1.02);
 }
 
+
+/* Metric Row & Confidence */
+.metrics-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Master Score Badge */
+.master-score-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 120px;
+}
+
+.master-score-badge .score-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.master-score-badge .score-label {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.score-high {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.score-mid {
+    border-color: #fbbf24;
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+}
+
+.score-low {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+/* Trade Plan Card */
+.trade-plan-card {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.trade-header {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+}
+
+.trade-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 1rem;
+}
+
+.trade-level {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.trade-level span {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.trade-level strong {
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.text-success { color: #34d399 !important; }
+.text-danger { color: #f87171 !important; }
+

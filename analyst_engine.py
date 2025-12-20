@@ -39,6 +39,8 @@ class AnalystEngine:
             "current_price": round(df['Close'].iloc[-1], 2),
             "consensus": self._calculate_consensus(results),
             "priority": self._generate_priority(results, actionable_strategies),
+            "master_score": self._calculate_master_score(results, actionable_strategies),
+            "trade_plan": self._generate_trade_plan(df, results, actionable_strategies),
             "personas": results,
             "actionable_strategies": actionable_strategies,
             "recent_news": news[:5] if news else []
@@ -407,6 +409,74 @@ class AnalystEngine:
             "reasons": reasons,
             "details": details,
             "books": [b['title'] for b in self.books if b['persona'] == "Macro Strategist"]
+        }
+
+    def _calculate_master_score(self, results: Dict[str, Any], strategies: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Calculates a 0-100 Master Score based on diverse inputs.
+        """
+        base_score = 50 # Neutral Start
+        
+        # 1. Persona Contributions
+        for res in results.values():
+            if "Strong Buy" in res['rating']: base_score += 8
+            elif "Buy" in res['rating']: base_score += 4
+            elif "Strong Sell" in res['rating'] or "Avoid" in res['rating']: base_score -= 5
+            
+        # 2. Strategy Bonuses
+        base_score += (len(strategies) * 5)
+        
+        # 3. Consensus Multiplier
+        consensus = self._calculate_consensus(results)
+        if "Strong Bullish" in consensus: base_score += 10
+        if "Bearish" in consensus: base_score -= 10
+        
+        # Clamp Score
+        final_score = max(0, min(99, base_score))
+        
+        # Rating Label
+        label = "A+ Setup 🚀" if final_score >= 85 else "B Setup ✅" if final_score >= 70 else "Neutral ⚠️" if final_score >= 40 else "Avoid ⛔"
+        
+        return {
+            "value": final_score,
+            "label": label
+        }
+
+    def _generate_trade_plan(self, df: pd.DataFrame, results: Dict[str, Any], strategies: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Generates simulated Entry, Target, and Stop Loss levels.
+        """
+        current_price = df['Close'].iloc[-1]
+        score_data = self._calculate_master_score(results, strategies)
+        
+        if score_data['value'] < 60:
+            return None # No trade recommended
+            
+        # Calculate ATR for volatility-based levels
+        atr = (df['High'] - df['Low']).tail(14).mean()
+        
+        # Strategy specific tweaks
+        is_momentum = any(s['type'] in ["High Volume Breakout", "High Volatility Speculation"] for s in strategies)
+        is_value = any(s['type'] in ["Support Pullback", "Long Term Value / Reversal"] for s in strategies)
+        
+        stop_buffer = 1.5 * atr if is_momentum else 2.0 * atr # Wider stop for value (catch falling knife), tighter for momentum
+        target_buffer = 3.0 * atr if is_momentum else 4.0 * atr # High reward targeting
+        
+        entry_low = current_price - (atr * 0.2)
+        entry_high = current_price + (atr * 0.2)
+        
+        stop_loss = current_price - stop_buffer
+        target_price = current_price + target_buffer
+        
+        risk = current_price - stop_loss
+        reward = target_price - current_price
+        rr_ratio = round(reward / risk, 1) if risk > 0 else 0
+        
+        return {
+            "entry_zone": f"${entry_low:.2f} - ${entry_high:.2f}",
+            "stop_loss": f"${stop_loss:.2f}",
+            "target": f"${target_price:.2f}",
+            "risk_reward": f"1:{rr_ratio}"
         }
 
 if __name__ == "__main__":
