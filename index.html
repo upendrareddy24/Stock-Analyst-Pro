@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analyst Mastermind | Council of 50</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</head>
+
+<body>
+    <div class="background-blobs">
+        <div class="blob blob1"></div>
+        <div class="blob blob2"></div>
+        <div class="blob blob3"></div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-brain-circuit"></i>
+                <h1>Analyst Mastermind</h1>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="tickerInput" placeholder="Enter Ticker (e.g. NVDA)" value="AAPL">
+                <button id="analyzeBtn">Analyze <i class="fas fa-microchip"></i></button>
+            </div>
+        </header>
+
+        <main id="dashboard" class="hidden">
+            <section class="ticker-summary glass">
+                <div class="ticker-header">
+                    <h2 id="tickerName">AAPL</h2>
+                    <span id="tickerPrice" class="price">$150.00</span>
+                </div>
+                <div class="consensus-badge" id="overallConsensus">
+                    Strong Bullish Consensus
+                </div>
+            </section>
+
+            <section class="strategies-section">
+                <h3><i class="fas fa-bolt"></i> Strategy Spotlight</h3>
+                <div id="strategiesList" class="strategy-grid">
+                    <!-- Strategies will be injected here -->
+                </div>
+            </section>
+
+            <section class="analyst-council">
+                <h3><i class="fas fa-users-viewfinder"></i> The Analyst Council</h3>
+                <div id="councilGrid" class="council-grid">
+                    <!-- Persona cards will be injected here -->
+                </div>
+            </section>
+
+            <section class="news-section">
+                <h3><i class="fas fa-newspaper"></i> Catalyst News Feed</h3>
+                <div id="newsFeed" class="news-feed-grid">
+                    <!-- News items will be injected here -->
+                </div>
+            </section>
+        </main>
+
+        <div id="loader" class="loader-container hidden">
+            <div class="spinner"></div>
+            <p>Consulting the Greats...</p>
+        </div>
+
+        <div id="welcome" class="welcome-screen">
+            <div class="welcome-content">
+                <h1>Ready to Analyze?</h1>
+                <p>Enter a stock ticker to see what the world's greatest investors would say about it.</p>
+                <div class="demo-tickers">
+                    <button class="demo-btn">NVDA</button>
+                    <button class="demo-btn">TSLA</button>
+                    <button class="demo-btn">BRK.B</button>
+                    <button class="demo-btn">AMD</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

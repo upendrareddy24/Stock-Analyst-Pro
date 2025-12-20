@@ -1,0 +1,556 @@
+[
+    {
+        "title": "The Intelligent Investor",
+        "author": "Benjamin Graham",
+        "persona": "Value Sage",
+        "strategies": [
+            "Long-Term Value",
+            "Fundamental Analysis",
+            "Defensive Investing"
+        ],
+        "principles": [
+            "Margin of Safety",
+            "Intrinsic Value vs Market Price",
+            "Mr. Market Psychology",
+            "Defensive vs Enterprising Investing"
+        ]
+    },
+    {
+        "title": "Security Analysis",
+        "author": "Benjamin Graham and David Dodd",
+        "persona": "Value Sage",
+        "strategies": [
+            "Deep Value",
+            "Balance Sheet Analysis"
+        ],
+        "principles": [
+            "Deep Value",
+            "Balance Sheet Strength",
+            "Earnings Power",
+            "Dividend Stability"
+        ]
+    },
+    {
+        "title": "Common Stocks and Uncommon Profits",
+        "author": "Philip A. Fisher",
+        "persona": "Growth Maverick",
+        "strategies": [
+            "Growth",
+            "Long-Term Investment"
+        ],
+        "principles": [
+            "Qualitative Analysis",
+            "Management Quality",
+            "Scuttlebutt Method",
+            "Growth Potential"
+        ]
+    },
+    {
+        "title": "One Up On Wall Street",
+        "author": "Peter Lynch",
+        "persona": "Growth Maverick",
+        "strategies": [
+            "Retail Momentum",
+            "Long-Term Growth"
+        ],
+        "principles": [
+            "Invest in what you know",
+            "Fast Growers",
+            "Tenbaggers",
+            "Earnings Growth"
+        ]
+    },
+    {
+        "title": "Market Wizards",
+        "author": "Jack D. Schwager",
+        "persona": "Trend Follower",
+        "strategies": [
+            "Trend Following",
+            "Momentum"
+        ],
+        "principles": [
+            "Risk Management",
+            "Discipline",
+            "Cutting Losses",
+            "Riding Winners"
+        ]
+    },
+    {
+        "title": "Reminiscences of a Stock Operator",
+        "author": "Edwin Lefèvre",
+        "persona": "Trend Follower",
+        "strategies": [
+            "Tape Reading",
+            "Momentum"
+        ],
+        "principles": [
+            "Tape Reading",
+            "Pivotal Points",
+            "Market Atmosphere",
+            "Patience"
+        ]
+    },
+    {
+        "title": "How to Make Money in Stocks",
+        "author": "William J. O'Neil",
+        "persona": "Growth Maverick",
+        "strategies": [
+            "Breakout",
+            "High Volume",
+            "Momentum"
+        ],
+        "principles": [
+            "CAN SLIM method",
+            "Relative Strength",
+            "Institutional Sponsorship",
+            "Chart Patterns"
+        ]
+    },
+    {
+        "title": "Trading in the Zone",
+        "author": "Mark Douglas",
+        "persona": "Psychology Expert",
+        "strategies": [
+            "Risk Management",
+            "Discipline"
+        ],
+        "principles": [
+            "Probabilistic Thinking",
+            "Mastering Fear and Greed",
+            "Consistent Mindset",
+            "Market Neutrality"
+        ]
+    },
+    {
+        "title": "A Random Walk Down Wall Street",
+        "author": "Burton G. Malkiel",
+        "persona": "Quant Master",
+        "strategies": [
+            "Indexing",
+            "Efficient Market"
+        ],
+        "principles": [
+            "Efficient Market Hypothesis",
+            "Indexing",
+            "Modern Portfolio Theory",
+            "Diversification"
+        ]
+    },
+    {
+        "title": "The Little Book of Common Sense Investing",
+        "author": "John C. Bogle",
+        "persona": "Quant Master",
+        "strategies": [
+            "Passive Investing",
+            "Low Cost"
+        ],
+        "principles": [
+            "Low-cost Indexing",
+            "Compounding",
+            "Tax Efficiency",
+            "Long-term Holding"
+        ]
+    },
+    {
+        "title": "The Alchemy of Finance",
+        "author": "George Soros",
+        "persona": "Macro Strategist",
+        "strategies": [
+            "Reflexivity",
+            "Macro Cycles"
+        ],
+        "principles": [
+            "Reflexivity",
+            "Boom/Bust Cycle",
+            "Global Macro Trends",
+            "Exploiting Market Inefficiencies"
+        ]
+    },
+    {
+        "title": "The Most Important Thing",
+        "author": "Howard Marks",
+        "persona": "Macro Strategist",
+        "strategies": [
+            "Market Cycles",
+            "Value"
+        ],
+        "principles": [
+            "Second-level Thinking",
+            "Risk Awareness",
+            "Market Cycles",
+            "Value vs Price"
+        ]
+    },
+    {
+        "title": "Fooled by Randomness",
+        "author": "Nassim Nicholas Taleb",
+        "persona": "Psychology Expert",
+        "strategies": [
+            "Risk Management",
+            "Tail Risk"
+        ],
+        "principles": [
+            "Black Swan Events",
+            "Survivorship Bias",
+            "Conflating Luck with Skill",
+            "Anti-fragility"
+        ]
+    },
+    {
+        "title": "Trade Your Way to Financial Freedom",
+        "author": "Van K. Tharp",
+        "persona": "Trend Follower",
+        "strategies": [
+            "Position Sizing",
+            "Systematic"
+        ],
+        "principles": [
+            "Position Sizing",
+            "Expectancy",
+            "R-multiples",
+            "System Design"
+        ]
+    },
+    {
+        "title": "Thinking, Fast and Slow",
+        "author": "Daniel Kahneman",
+        "persona": "Psychology Expert",
+        "strategies": [
+            "Behavioral Bias"
+        ],
+        "principles": [
+            "Cognitive Biases",
+            "Heuristics",
+            "Loss Aversion",
+            "Anchoring"
+        ]
+    },
+    {
+        "title": "The Little Book That Still Beats the Market",
+        "author": "Joel Greenblatt",
+        "persona": "Value Sage",
+        "strategies": [
+            "Systematic Value",
+            "Quality Growth"
+        ],
+        "principles": [
+            "Magic Formula",
+            "ROIC",
+            "Earnings Yield",
+            "Systematic Value"
+        ]
+    },
+    {
+        "title": "Margin of Safety",
+        "author": "Seth Klarman",
+        "persona": "Value Sage",
+        "strategies": [
+            "Deep Value",
+            "Risk Aversion"
+        ],
+        "principles": [
+            "Risk Aversion",
+            "Value Investing in Distressed Markets",
+            "Analytical Rigor",
+            "Patience"
+        ]
+    },
+    {
+        "title": "Principles: Life and Work",
+        "author": "Ray Dalio",
+        "persona": "Quant Master",
+        "strategies": [
+            "Macro",
+            "Economic Engine"
+        ],
+        "principles": [
+            "Radical Transparency",
+            "Algorithmic Decision Making",
+            "Economic Machine",
+            "Risk Parity"
+        ]
+    },
+    {
+        "title": "A Man for All Markets",
+        "author": "Edward O. Thorp",
+        "persona": "Quant Master",
+        "strategies": [
+            "Arbitrage",
+            "Statistical Advantage"
+        ],
+        "principles": [
+            "Quantitative Advantage",
+            "Kelly Criterion",
+            "Statistical Arbitrage",
+            "Beat the Dealer"
+        ]
+    },
+    {
+        "title": "The Psychology of Money",
+        "author": "Morgan Housel",
+        "persona": "Psychology Expert",
+        "strategies": [
+            "Financial Behavior"
+        ],
+        "principles": [
+            "Behavioral Finance",
+            "Human Element in Investing",
+            "Compounding Habits",
+            "Staying Rich vs Getting Rich"
+        ]
+    },
+    {
+        "title": "Technical Analysis of the Financial Markets",
+        "author": "John J. Murphy",
+        "persona": "Trend Follower",
+        "strategies": [
+            "Chart Patterns",
+            "Technical Indicators"
+        ],
+        "principles": [
+            "Chart Analysis",
+            "Indicators",
+            "Trend Confirmation",
+            "Volume Analysis"
+        ]
+    },
+    {
+        "title": "You Can Be A Stock Market Genius",
+        "author": "Joel Greenblatt",
+        "persona": "Value Sage",
+        "strategies": [
+            "Special Situations",
+            "Spinoffs"
+        ],
+        "principles": [
+            "Special Situations",
+            "Spinoffs",
+            "Arbitrage",
+            "Hidden Assets"
+        ]
+    },
+    {
+        "title": "Stan Weinstein's Secrets For Profiting in Bull and Bear Markets",
+        "author": "Stan Weinstein",
+        "persona": "Trend Follower",
+        "strategies": [
+            "Stage Analysis",
+            "Trend"
+        ],
+        "principles": [
+            "Stage Analysis",
+            "30-week Moving Average",
+            "Relative Performance",
+            "Breakouts"
+        ]
+    },
+    {
+        "title": "Trade Like a Stock Market Wizard",
+        "author": "Mark Minervini",
+        "persona": "Growth Maverick",
+        "strategies": [
+            "Breakout",
+            "Momentum",
+            "VCP Pattern"
+        ],
+        "principles": [
+            "VCP Pattern",
+            "Momentum",
+            "Trend Template",
+            "Strict Risk Management"
+        ]
+    },
+    {
+        "title": "Think and Trade Like a Champion",
+        "author": "Mark Minervini",
+        "persona": "Growth Maverick",
+        "strategies": [
+            "Extreme Performance",
+            "Risk Control"
+        ],
+        "principles": [
+            "Elite Performance",
+            "Stop Losses",
+            "Post-Analysis",
+            "Consistency"
+        ]
+    },
+    {
+        "title": "The Essays of Warren Buffett",
+        "author": "Warren Buffett",
+        "persona": "Value Sage",
+        "strategies": [
+            "Moat Based Value",
+            "Long-Term compounding"
+        ],
+        "principles": [
+            "Economic Moats",
+            "Owner Earnings",
+            "Circle of Competence",
+            "Integrity of Management"
+        ]
+    },
+    {
+        "title": "The Bogleheads' Guide to Investing",
+        "author": "Taylor Larimore",
+        "persona": "Quant Master",
+        "strategies": [
+            "Passive Indexing"
+        ],
+        "principles": [
+            "Simplicity",
+            "Index Funds",
+            "Living Below Means",
+            "Market Timing is Futile"
+        ]
+    },
+    {
+        "title": "Stocks for the Long Run",
+        "author": "Jeremy Siegel",
+        "persona": "Macro Strategist",
+        "strategies": [
+            "Long-Term Holding",
+            "Asset Allocation"
+        ],
+        "principles": [
+            "Equity Premium",
+            "Long-term Returns",
+            "Inflation Protection",
+            "Historical Cycles"
+        ]
+    },
+    {
+        "title": "Market Wizards: Interiews with Top Traders",
+        "author": "Jack D. Schwager",
+        "persona": "Trend Follower",
+        "strategies": [
+            "Trading Psychology",
+            "Risk Management"
+        ],
+        "principles": [
+            "Winning Mindset",
+            "Developing a Personal Edge",
+            "Control of Risk",
+            "Flexibility"
+        ]
+    },
+    {
+        "title": "The Intelligent Asset Allocator",
+        "author": "William Bernstein",
+        "persona": "Quant Master",
+        "strategies": [
+            "Asset Allocation",
+            "Risk Parity"
+        ],
+        "principles": [
+            "Asset Allocation",
+            "Risk/Reward Frontiers",
+            "Correlation",
+            "Efficient Frontier"
+        ]
+    },
+    {
+        "title": "Irrational Exuberance",
+        "author": "Robert J. Shiller",
+        "persona": "Macro Strategist",
+        "strategies": [
+            "Bubble Analysis",
+            "Sentiment"
+        ],
+        "principles": [
+            "Market Bubbles",
+            "CAPE Ratio",
+            "Behavioral Economics",
+            "Psychological Feedback Loops"
+        ]
+    },
+    {
+        "title": "Poor Charlie's Almanack",
+        "author": "Charlie Munger",
+        "persona": "Value Sage",
+        "strategies": [
+            "Mental Models",
+            "Multidisciplinary Investment"
+        ],
+        "principles": [
+            "Latticework of Mental Models",
+            "Inversion",
+            "Multidisciplinary Thinking",
+            "Checklists"
+        ]
+    },
+    {
+        "title": "Competitive Strategy",
+        "author": "Michael Porter",
+        "persona": "Growth Maverick",
+        "strategies": [
+            "Industry Analysis",
+            "Moats"
+        ],
+        "principles": [
+            "Five Forces",
+            "Sustainable Competitive Advantage",
+            "Industry Structure",
+            "Barriers to Entry"
+        ]
+    },
+    {
+        "title": "Black Swan",
+        "author": "Nassim Nicholas Taleb",
+        "persona": "Macro Strategist",
+        "strategies": [
+            "Tail Risk",
+            "Extreme Events"
+        ],
+        "principles": [
+            "Extreme Events",
+            "Scalability",
+            "Fat Tails",
+            "Robustness"
+        ]
+    },
+    {
+        "title": "Dhandho Investor",
+        "author": "Mohnish Pabrai",
+        "persona": "Value Sage",
+        "strategies": [
+            "Low Risk High Reward",
+            "Cloning"
+        ],
+        "principles": [
+            "Heads I win, tails I don't lose much",
+            "Copying Best Ideas",
+            "Low Risk High Uncertainty",
+            "Few Bets, Big Bets, Infrequent Bets"
+        ]
+    },
+    {
+        "title": "Mastering the Cycle",
+        "author": "Howard Marks",
+        "persona": "Macro Strategist",
+        "strategies": [
+            "Cycles",
+            "Contrarian"
+        ],
+        "principles": [
+            "Pendulum of Market Sentiment",
+            "Economic Tides",
+            "Positioning in the Cycle"
+        ]
+    },
+    {
+        "title": "The Little Book of Valuation",
+        "author": "Aswath Damodaran",
+        "persona": "Value Sage",
+        "strategies": [
+            "Valuation",
+            "DCF"
+        ],
+        "principles": [
+            "DCF Models",
+            "Relative Valuation",
+            "Cost of Capital",
+            "Growth Estimates"
+        ]
+    }
+]
