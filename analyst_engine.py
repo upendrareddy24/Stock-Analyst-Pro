@@ -28,18 +28,49 @@ class AnalystEngine:
         results = {}
         for persona, func in self.personas.items():
             if persona == "News Watch":
-                results[persona] = func(news) if news else {"rating": "Hold", "score": 0, "reasons": ["No recent news found."], "books": []}
+                results[persona] = func(news) if news else {"rating": "Hold", "score": 0, "reasons": ["No recent news found."], "details": "No news catalysts detected to influence short-term direction.", "books": []}
             else:
                 results[persona] = func(df)
 
+        actionable_strategies = self._detect_specific_strategies(df, news)
+        
         return {
             "ticker": ticker,
-            "current_price": df['Close'].iloc[-1],
-            "analysis": results,
-            "overall_consensus": self._calculate_consensus(results),
-            "detected_strategies": self._detect_specific_strategies(df, news),
-            "recent_news": news[:3] if news else []
+            "current_price": round(df['Close'].iloc[-1], 2),
+            "consensus": self._calculate_consensus(results),
+            "priority": self._generate_priority(results, actionable_strategies),
+            "personas": results,
+            "actionable_strategies": actionable_strategies,
+            "recent_news": news[:5] if news else []
         }
+
+    def _generate_priority(self, results: Dict[str, Any], strategies: List[Dict[str, Any]]) -> Dict[str, Any]:
+        buy_count = sum(1 for p in results.values() if "Buy" in p['rating'])
+        
+        if buy_count >= 5:
+            return {
+                "action": "URGENT BUY 🚀",
+                "confidence": "High",
+                "reasoning": "Rare 5-persona alignment. Technicals, Momentum, and Sentiment are converging simultaneously."
+            }
+        elif buy_count >= 3:
+            return {
+                "action": "STRATEGIC ACCUMULATE 📈",
+                "confidence": "Medium-High",
+                "reasoning": "Majority consensus reached. Momentum is building, but wait for 'Strategy Spotlight' triggers for optimal entry."
+            }
+        elif any(s['type'] == "Positive News Catalyst" for s in strategies):
+            return {
+                "action": "CATALYST WATCH ⚡",
+                "confidence": "Medium",
+                "reasoning": "News-driven potential. Technicals are lagging, but the news event could spark a sudden breakout."
+            }
+        else:
+            return {
+                "action": "PATIENT WATCH ⏱️",
+                "confidence": "Neutral",
+                "reasoning": "Mixed signals across different styles. Not yet aligned for a high-probability trade."
+            }
 
     def _detect_specific_strategies(self, df: pd.DataFrame, news: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """
@@ -162,10 +193,20 @@ class AnalystEngine:
         
         rating = "Buy" if score >= 2 else "Avoid" if score < 0 else "Hold"
         
+        details = (
+            "Value Sage analysis focuses on the 'Margin of Safety'. "
+            "We look for stocks trading at a discount to their intrinsic value or near historical lows. "
+            "A high score suggests the downside risk is limited relative to the asset value."
+        ) if rating == "Buy" else (
+            "Currently, the price doesn't offer a significant enough discount for a value-based entry. "
+            "We prefer waiting for a deeper correction or better fundamentals."
+        )
+
         return {
             "rating": rating,
             "score": score,
             "reasons": reasons,
+            "details": details,
             "books": [b['title'] for b in self.books if b['persona'] == "Value Sage"]
         }
 
@@ -190,10 +231,16 @@ class AnalystEngine:
             
         rating = "Strong Buy" if score >= 3 else "Buy" if score >= 1 else "Hold"
         
+        details = (
+            "Growth Mavericks look for 'Superperformers'. We prioritize institutional momentum "
+            "and Stage 2 uptrends. A Buy rating here indicates the 'path of least resistance' is currently UP."
+        ) if "Buy" in rating else "Momentum is currently cooling or hasn't started. Growth experts prefer to see price > SMA50 before commitment."
+
         return {
             "rating": rating,
             "score": score,
             "reasons": reasons,
+            "details": details,
             "books": [b['title'] for b in self.books if b['persona'] == "Growth Maverick"]
         }
 
@@ -218,10 +265,16 @@ class AnalystEngine:
             
         rating = "Buy" if score >= 2 else "Avoid" if score <= 0 else "Hold"
         
+        details = (
+            "Trend Followers 'trade the tape'. If the short-term EMA is rising and volume is expanding, "
+            "we jump on board. We don't care about 'value'—only direction and strength."
+        ) if rating == "Buy" else "The short-term trend is either broken or too weak to support a high-probability trade right now."
+
         return {
             "rating": rating,
             "score": score,
             "reasons": reasons,
+            "details": details,
             "books": [b['title'] for b in self.books if b['persona'] == "Trend Follower"]
         }
 
@@ -242,10 +295,16 @@ class AnalystEngine:
             
         rating = "Buy" if score >= 2 else "Hold" if score >= 0 else "Avoid"
         
+        details = (
+            "Quant analysis is purely statistical. A Buy rating suggests the ticker has deviated too far from its mean "
+            "and has a high probability of reverting back (Mean Reversion)."
+        ) if rating == "Buy" else "The price is currently within normal statistical boundaries (Z-score 0 to 1). No statistical edge detected."
+
         return {
             "rating": rating,
             "score": score,
             "reasons": reasons,
+            "details": details,
             "books": [b['title'] for b in self.books if b['persona'] == "Quant Master"]
         }
 
@@ -267,10 +326,17 @@ class AnalystEngine:
             
         rating = "Buy" if score >= 2 else "Hold" if score >= 0 else "Avoid"
         
+        details = (
+            "The Psychology Expert monitors 'Fear and Greed'. We look for divergence between price "
+            "and technical indicators like RSI. A Buy rating here suggests the market is overly pessimistic "
+            "relative to the trend, offering a contrarian or consolidation entry."
+        ) if rating == "Buy" else "The market is currently in a 'neutral' psychological zone—neither euphoria nor panic detected."
+
         return {
             "rating": rating,
             "score": score,
             "reasons": reasons,
+            "details": details,
             "books": [b['title'] for b in self.books if b['persona'] == "Psychology Expert"]
         }
 
@@ -298,10 +364,16 @@ class AnalystEngine:
 
         rating = "Strong Buy" if score >= 3 else "Buy" if score >= 1 else "Avoid" if score <= -2 else "Hold"
         
+        details = (
+            "News Watch filters real-time catalysts. A Buy rating suggests that recent news "
+            "(earnings, upgrades, or partnerships) is acting as a powerful 'tailwind' for the stock."
+        ) if "Buy" in rating else "No high-impact news catalysts detected in the recent headlines."
+
         return {
             "rating": rating,
             "score": score,
             "reasons": reasons,
+            "details": details,
             "books": ["The Alchemy of Finance", "Liar's Poker", "Fooled by Randomness"]
         }
 
@@ -323,10 +395,17 @@ class AnalystEngine:
             
         rating = "Buy" if score >= 1 else "Hold" if score == 0 else "Avoid"
         
+        details = (
+            "Macro Strategists look at the 'Big Picture'. We prioritize stocks that are above their "
+            "200-day moving average (Long-term growth phase). A Buy rating indicates the "
+            "underlying economic tide for this ticker is rising."
+        ) if rating == "Buy" else "The macro trend is currently neutral or bearish. We prefer to stay on the sidelines until the 'tide' turns."
+
         return {
             "rating": rating,
             "score": score,
             "reasons": reasons,
+            "details": details,
             "books": [b['title'] for b in self.books if b['persona'] == "Macro Strategist"]
         }
 

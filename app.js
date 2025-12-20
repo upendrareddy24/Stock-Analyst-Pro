@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('loader');
     const demoButtons = document.querySelectorAll('.demo-btn');
 
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalBody = document.getElementById('modalBody');
+    const closeModal = document.getElementById('closeModal');
+
     const handleAnalyze = async (ticker) => {
         if (!ticker) return;
 
@@ -38,19 +42,26 @@ document.addEventListener('DOMContentLoaded', () => {
         loader.classList.add('hidden');
         dashboard.classList.remove('hidden');
 
+        // Update Priority Section
+        if (data.priority) {
+            document.getElementById('priorityAction').textContent = data.priority.action;
+            document.getElementById('priorityReasoning').textContent = data.priority.reasoning;
+            document.getElementById('priorityConfidence').textContent = data.priority.confidence;
+        }
+
         // Update Summary
         document.getElementById('tickerName').textContent = data.ticker;
         document.getElementById('tickerPrice').textContent = `$${data.current_price.toFixed(2)}`;
 
         const consensusEl = document.getElementById('overallConsensus');
-        consensusEl.textContent = data.overall_consensus;
+        consensusEl.textContent = data.consensus;
 
         // Dynamic colors for consensus
-        if (data.overall_consensus.includes("Bullish")) {
+        if (data.consensus && data.consensus.includes("Bullish")) {
             consensusEl.style.borderColor = 'var(--accent-green)';
             consensusEl.style.color = 'var(--accent-green)';
             consensusEl.style.background = 'rgba(16, 185, 129, 0.1)';
-        } else if (data.overall_consensus.includes("Bearish")) {
+        } else if (data.consensus && data.consensus.includes("Bearish")) {
             consensusEl.style.borderColor = 'var(--accent-red)';
             consensusEl.style.color = 'var(--accent-red)';
             consensusEl.style.background = 'rgba(239, 68, 68, 0.1)';
@@ -63,8 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Render Strategies
         const strategiesList = document.getElementById('strategiesList');
         strategiesList.innerHTML = '';
-        if (data.detected_strategies && data.detected_strategies.length > 0) {
-            data.detected_strategies.forEach(strategy => {
+        if (data.actionable_strategies && data.actionable_strategies.length > 0) {
+            data.actionable_strategies.forEach(strategy => {
                 const card = document.createElement('div');
                 card.className = 'strategy-card glass';
                 card.innerHTML = `
@@ -83,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Render Council
         const councilGrid = document.getElementById('councilGrid');
         councilGrid.innerHTML = '';
-        Object.entries(data.analysis).forEach(([persona, result]) => {
+        Object.entries(data.personas).forEach(([persona, result]) => {
             const card = document.createElement('div');
             card.className = 'persona-card glass';
 
@@ -103,6 +114,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     <small>Influenced by: ${result.books && result.books.length > 0 ? result.books.slice(0, 3).join(', ') : 'Market Observation'}</small>
                 </div>
             `;
+
+            // Card Click Event for Modal
+            card.addEventListener('click', () => {
+                modalBody.innerHTML = `
+                    <div class="modal-details">
+                        <h2>${persona}'s Reasoning</h2>
+                        <p>${result.details || "No further details available."}</p>
+                        <span class="modal-books-title">Referenced Wisdom:</span>
+                        <div class="strategy-books">
+                            ${result.books.map(book => `<span class="book-tag">${book}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                modalOverlay.classList.remove('hidden');
+            });
+
             councilGrid.appendChild(card);
         });
 
@@ -129,6 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
             newsFeed.innerHTML = '<p class="text-secondary">No recent news catalysts found for this ticker.</p>';
         }
     };
+
+    closeModal.addEventListener('click', () => modalOverlay.classList.add('hidden'));
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) modalOverlay.classList.add('hidden');
+    });
 
     analyzeBtn.addEventListener('click', () => handleAnalyze(tickerInput.value));
     tickerInput.addEventListener('keypress', (e) => {

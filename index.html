@@ -32,6 +32,19 @@
         </header>
 
         <main id="dashboard" class="hidden">
+            <section class="priority-section glass" id="priorityCard">
+                <div class="priority-header">
+                    <span class="priority-label">Priority Action</span>
+                    <h2 id="priorityAction">...</h2>
+                </div>
+                <div class="priority-details">
+                    <p id="priorityReasoning">...</p>
+                    <div class="confidence-meter">
+                        <span>Confidence: <strong id="priorityConfidence">...</strong></span>
+                    </div>
+                </div>
+            </section>
+
             <section class="ticker-summary glass">
                 <div class="ticker-header">
                     <h2 id="tickerName">AAPL</h2>
@@ -79,6 +92,15 @@
                     <button class="demo-btn">BRK.B</button>
                     <button class="demo-btn">AMD</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay hidden">
+        <div class="modal-content glass">
+            <button id="closeModal" class="close-btn"><i class="fas fa-times"></i></button>
+            <div id="modalBody">
+                <!-- Detailed analysis will be injected here -->
             </div>
         </div>
     </div>
