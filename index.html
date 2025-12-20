@@ -31,81 +31,90 @@
             </div>
         </header>
 
-        <main id="dashboard" class="hidden">
-            <section class="priority-section glass" id="priorityCard">
-                <div class="priority-header">
-                    <span class="priority-label">Priority Action</span>
-                    <h2 id="priorityAction">...</h2>
+        <div class="workspace-grid">
+            <aside class="history-sidebar glass">
+                <h3><i class="fas fa-history"></i> Recent Analysis</h3>
+                <div id="historyList" class="history-list">
+                    <!-- History items will be injected here -->
+                    <p class="empty-msg">No recent history.</p>
                 </div>
-                <div class="priority-details">
-                    <p id="priorityReasoning">...</p>
-                    <div class="confidence-meter">
-                        <span>Confidence: <strong id="priorityConfidence">...</strong></span>
+            </aside>
+
+            <main id="dashboard" class="hidden">
+                <section class="priority-section glass" id="priorityCard">
+                    <div class="priority-header">
+                        <span class="priority-label">Priority Action</span>
+                        <h2 id="priorityAction">...</h2>
+                    </div>
+                    <div class="priority-details">
+                        <p id="priorityReasoning">...</p>
+                        <div class="confidence-meter">
+                            <span>Confidence: <strong id="priorityConfidence">...</strong></span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="ticker-summary glass">
+                    <div class="ticker-header">
+                        <h2 id="tickerName">AAPL</h2>
+                        <span id="tickerPrice" class="price">$150.00</span>
+                    </div>
+                    <div class="consensus-badge" id="overallConsensus">
+                        Strong Bullish Consensus
+                    </div>
+                </section>
+
+                <section class="strategies-section">
+                    <h3><i class="fas fa-bolt"></i> Strategy Spotlight</h3>
+                    <div id="strategiesList" class="strategy-grid">
+                        <!-- Strategies will be injected here -->
+                    </div>
+                </section>
+
+                <section class="analyst-council">
+                    <h3><i class="fas fa-users-viewfinder"></i> The Analyst Council</h3>
+                    <div id="councilGrid" class="council-grid">
+                        <!-- Persona cards will be injected here -->
+                    </div>
+                </section>
+
+                <section class="news-section">
+                    <h3><i class="fas fa-newspaper"></i> Catalyst News Feed</h3>
+                    <div id="newsFeed" class="news-feed-grid">
+                        <!-- News items will be injected here -->
+                    </div>
+                </section>
+            </main>
+
+            <div id="loader" class="loader-container hidden">
+                <div class="spinner"></div>
+                <p>Consulting the Greats...</p>
+            </div>
+
+            <div id="welcome" class="welcome-screen">
+                <div class="welcome-content">
+                    <h1>Ready to Analyze?</h1>
+                    <p>Enter a stock ticker to see what the world's greatest investors would say about it.</p>
+                    <div class="demo-tickers">
+                        <button class="demo-btn">NVDA</button>
+                        <button class="demo-btn">TSLA</button>
+                        <button class="demo-btn">BRK.B</button>
+                        <button class="demo-btn">AMD</button>
                     </div>
                 </div>
-            </section>
-
-            <section class="ticker-summary glass">
-                <div class="ticker-header">
-                    <h2 id="tickerName">AAPL</h2>
-                    <span id="tickerPrice" class="price">$150.00</span>
-                </div>
-                <div class="consensus-badge" id="overallConsensus">
-                    Strong Bullish Consensus
-                </div>
-            </section>
-
-            <section class="strategies-section">
-                <h3><i class="fas fa-bolt"></i> Strategy Spotlight</h3>
-                <div id="strategiesList" class="strategy-grid">
-                    <!-- Strategies will be injected here -->
-                </div>
-            </section>
-
-            <section class="analyst-council">
-                <h3><i class="fas fa-users-viewfinder"></i> The Analyst Council</h3>
-                <div id="councilGrid" class="council-grid">
-                    <!-- Persona cards will be injected here -->
-                </div>
-            </section>
-
-            <section class="news-section">
-                <h3><i class="fas fa-newspaper"></i> Catalyst News Feed</h3>
-                <div id="newsFeed" class="news-feed-grid">
-                    <!-- News items will be injected here -->
-                </div>
-            </section>
-        </main>
-
-        <div id="loader" class="loader-container hidden">
-            <div class="spinner"></div>
-            <p>Consulting the Greats...</p>
+            </div>
         </div>
 
-        <div id="welcome" class="welcome-screen">
-            <div class="welcome-content">
-                <h1>Ready to Analyze?</h1>
-                <p>Enter a stock ticker to see what the world's greatest investors would say about it.</p>
-                <div class="demo-tickers">
-                    <button class="demo-btn">NVDA</button>
-                    <button class="demo-btn">TSLA</button>
-                    <button class="demo-btn">BRK.B</button>
-                    <button class="demo-btn">AMD</button>
+        <div id="modalOverlay" class="modal-overlay hidden">
+            <div class="modal-content glass">
+                <button id="closeModal" class="close-btn"><i class="fas fa-times"></i></button>
+                <div id="modalBody">
+                    <!-- Detailed analysis will be injected here -->
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="modalOverlay" class="modal-overlay hidden">
-        <div class="modal-content glass">
-            <button id="closeModal" class="close-btn"><i class="fas fa-times"></i></button>
-            <div id="modalBody">
-                <!-- Detailed analysis will be injected here -->
-            </div>
-        </div>
-    </div>
-
-    <script src="app.js"></script>
+        <script src="app.js"></script>
 </body>
 
 </html>

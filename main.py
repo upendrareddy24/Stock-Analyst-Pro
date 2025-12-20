@@ -22,6 +22,7 @@ def analyze():
             
         news = orchestrator.get_ticker_news(ticker)
         analysis = engine.analyze_ticker(ticker, df, news)
+        print(f"DEBUG: Analysis keys for {ticker}: {list(analysis.keys())}")
         return jsonify(analysis)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

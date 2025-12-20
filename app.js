@@ -9,6 +9,93 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalOverlay = document.getElementById('modalOverlay');
     const modalBody = document.getElementById('modalBody');
     const closeModal = document.getElementById('closeModal');
+    const historyList = document.getElementById('historyList');
+
+    let analysisHistory = JSON.parse(localStorage.getItem('stock_history') || '[]');
+    let personaWatchlists = JSON.parse(localStorage.getItem('persona_watchlists') || '{}');
+
+    const updatePersonaWatchlists = (ticker, personas) => {
+        let updated = false;
+        Object.entries(personas).forEach(([persona, result]) => {
+            if (!personaWatchlists[persona]) personaWatchlists[persona] = [];
+
+            // If Buy/Strong Buy, add to list
+            if (result.rating.includes("Buy")) {
+                // Remove existing to update timestamp/position
+                personaWatchlists[persona] = personaWatchlists[persona].filter(item => item.ticker !== ticker);
+                personaWatchlists[persona].unshift({
+                    ticker,
+                    rating: result.rating,
+                    date: new Date().toLocaleDateString(),
+                    timestamp: Date.now()
+                });
+                updated = true;
+            } else if (result.rating.includes("Avoid") || result.rating.includes("Hold")) {
+                // Remove if it's no longer a buy
+                const preLength = personaWatchlists[persona].length;
+                personaWatchlists[persona] = personaWatchlists[persona].filter(item => item.ticker !== ticker);
+                if (personaWatchlists[persona].length !== preLength) updated = true;
+            }
+
+            // Keep top 20 items per persona
+            if (personaWatchlists[persona].length > 20) {
+                personaWatchlists[persona] = personaWatchlists[persona].slice(0, 20);
+            }
+        });
+
+        if (updated) {
+            localStorage.setItem('persona_watchlists', JSON.stringify(personaWatchlists));
+        }
+    };
+
+    const saveToHistory = (ticker, consensus) => {
+        const newItem = {
+            ticker,
+            consensus,
+            date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            timestamp: Date.now()
+        };
+
+        // Remove existing if same ticker to move to top
+        analysisHistory = analysisHistory.filter(item => item.ticker !== ticker);
+        analysisHistory.unshift(newItem);
+        analysisHistory = analysisHistory.slice(0, 10); // Keep last 10
+
+        localStorage.setItem('stock_history', JSON.stringify(analysisHistory));
+        renderHistory();
+    };
+
+    const renderHistory = () => {
+        if (analysisHistory.length === 0) {
+            historyList.innerHTML = '<p class="empty-msg">No recent history.</p>';
+            return;
+        }
+
+        historyList.innerHTML = '';
+        analysisHistory.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-item glass';
+
+            let badgeClass = 'rating-hold';
+            if (item.consensus.includes("Bullish")) badgeClass = 'rating-buy';
+            if (item.consensus.includes("Bearish")) badgeClass = 'rating-avoid';
+
+            div.innerHTML = `
+                <div class="history-item-header">
+                    <h4>${item.ticker}</h4>
+                    <span class="mini-consensus rating-pill ${badgeClass}">${item.consensus.split(' ')[0]}</span>
+                </div>
+                <div class="date">${item.date}</div>
+            `;
+
+            div.addEventListener('click', () => {
+                tickerInput.value = item.ticker;
+                handleAnalyze(item.ticker);
+            });
+
+            historyList.appendChild(div);
+        });
+    };
 
     const handleAnalyze = async (ticker) => {
         if (!ticker) return;
@@ -30,6 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             renderDashboard(data);
+            saveToHistory(data.ticker, data.consensus);
+            updatePersonaWatchlists(data.ticker, data.personas);
         } catch (err) {
             console.error(err);
             alert("Failed to reach the consulting spirits. Is the server running?");
@@ -119,12 +208,29 @@ document.addEventListener('DOMContentLoaded', () => {
             card.addEventListener('click', () => {
                 modalBody.innerHTML = `
                     <div class="modal-details">
-                        <h2>${persona}'s Reasoning</h2>
-                        <p>${result.details || "No further details available."}</p>
-                        <span class="modal-books-title">Referenced Wisdom:</span>
-                        <div class="strategy-books">
-                            ${result.books.map(book => `<span class="book-tag">${book}</span>`).join('')}
+                    <h2>${persona}'s Reasoning</h2>
+                    <p>${result.details || "No further details available."}</p>
+
+                    ${personaWatchlists[persona] && personaWatchlists[persona].length > 0 ? `
+                        <div class="watchlist-section">
+                            <span class="modal-books-title">🏆 ${persona}'s Top Picks</span>
+                            <div class="watchlist-grid">
+                                ${personaWatchlists[persona].map(item => `
+                                    <div class="watchlist-item glass-low" onclick="document.getElementById('tickerInput').value='${item.ticker}'; document.getElementById('analyzeBtn').click(); document.getElementById('closeModal').click();">
+                                        <strong>${item.ticker}</strong>
+                                        <span class="mini-rating ${item.rating.includes('Strong') ? 'strong-buy' : 'buy'}">${item.rating}</span>
+                                        <small>${item.date}</small>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
+                        ` : ''}
+
+                    <span class="modal-books-title">Referenced Wisdom:</span>
+                    <div class="strategy-books">
+                        ${result.books.map(book => `<span class="book-tag">${book}</span>`).join('')}
+                    </div>
+                </div>
                     </div>
                 `;
                 modalOverlay.classList.remove('hidden');
@@ -141,15 +247,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newsItem = document.createElement('div');
                 newsItem.className = 'news-item glass';
                 newsItem.innerHTML = `
-                    <div class="news-info">
+                    < div class="news-info" >
                         <h4>${item.title}</h4>
                         <p>${item.summary ? item.summary.substring(0, 150) + '...' : 'Recent catalyst update.'}</p>
-                    </div>
-                    <div class="news-meta">
-                        <span class="news-date">${item.date}</span>
-                        <a href="${item.url}" target="_blank" class="news-link">Read More <i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                `;
+                    </div >
+        <div class="news-meta">
+            <span class="news-date">${item.date}</span>
+            <a href="${item.url}" target="_blank" class="news-link">Read More <i class="fas fa-external-link-alt"></i></a>
+        </div>
+    `;
                 newsFeed.appendChild(newsItem);
             });
         } else {
@@ -173,4 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
             handleAnalyze(btn.textContent);
         });
     });
+
+    // Initial Render
+    renderHistory();
 });

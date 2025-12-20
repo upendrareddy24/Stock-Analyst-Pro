@@ -423,17 +423,17 @@ if __name__ == "__main__":
     
     print(f"\n--- {ticker} Analysis Report ---")
     print(f"Price: ${analysis['current_price']:.2f}")
-    print(f"Consensus: {analysis['overall_consensus']}")
+    print(f"Consensus: {analysis['consensus']}")
     
     print("\n[Strategy Matches]")
-    if analysis['detected_strategies']:
-        for strategy in analysis['detected_strategies']:
+    if analysis['actionable_strategies']:
+        for strategy in analysis['actionable_strategies']:
             print(f" 🔥 {strategy['type']}: {strategy['description']}")
             print(f"    Referenced Books: {', '.join(strategy['books'])}")
     else:
         print(" No specific technical strategies detected at current price.")
 
-    for persona, result in analysis['analysis'].items():
+    for persona, result in analysis['personas'].items():
         print(f"\n[{persona}] Rating: {result['rating']}")
         for reason in result['reasons']:
             print(f" - {reason}")
