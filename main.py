@@ -30,7 +30,7 @@ def index():
 
 @app.route('/api/analyze', methods=['GET'])
 def analyze():
-    ticker = request.args.get('ticker', 'AAPL').upper()
+    ticker = request.args.get('ticker', 'AAPL').upper().strip()
     try:
         df = orchestrator.get_stock_data(ticker)
         if df is None or df.empty:
