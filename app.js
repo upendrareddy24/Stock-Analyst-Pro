@@ -12,81 +12,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyList = document.getElementById('historyList');
     const bullishList = document.getElementById('bullishList');
 
-    let analysisHistory = JSON.parse(localStorage.getItem('stock_history') || '[]');
-    let bullishRadar = JSON.parse(localStorage.getItem('bullish_radar') || '[]');
-    let personaWatchlists = JSON.parse(localStorage.getItem('persona_watchlists') || '{}');
+    let analysisHistory = [];
+    let bullishRadar = [];
+    let personaWatchlists = {}; // We'll fetch this on demand for the modal
 
-    const updatePersonaWatchlists = (ticker, personas) => {
-        let updated = false;
-        Object.entries(personas).forEach(([persona, result]) => {
-            if (!personaWatchlists[persona]) personaWatchlists[persona] = [];
+    // We no longer update local watchlists, the server handles persistence during /api/analyze
 
-            // If Buy/Strong Buy, add to list
-            if (result.rating.includes("Buy")) {
-                // Remove existing to update timestamp/position
-                personaWatchlists[persona] = personaWatchlists[persona].filter(item => item.ticker !== ticker);
-                personaWatchlists[persona].unshift({
-                    ticker,
-                    rating: result.rating,
-                    date: new Date().toLocaleDateString(),
-                    timestamp: Date.now()
-                });
-                updated = true;
-            } else if (result.rating.includes("Avoid") || result.rating.includes("Hold")) {
-                // Remove if it's no longer a buy
-                const preLength = personaWatchlists[persona].length;
-                personaWatchlists[persona] = personaWatchlists[persona].filter(item => item.ticker !== ticker);
-                if (personaWatchlists[persona].length !== preLength) updated = true;
-            }
-
-            // Keep top 20 items per persona
-            if (personaWatchlists[persona].length > 20) {
-                personaWatchlists[persona] = personaWatchlists[persona].slice(0, 20);
-            }
-        });
-
-        if (updated) {
-            localStorage.setItem('persona_watchlists', JSON.stringify(personaWatchlists));
-        }
-    };
-
-    const saveToHistory = (ticker, consensus) => {
-        const newItem = {
-            ticker,
-            consensus,
-            date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            timestamp: Date.now()
-        };
-
-        // Remove existing if same ticker to move to top
-        analysisHistory = analysisHistory.filter(item => item.ticker !== ticker);
-        analysisHistory.unshift(newItem);
-        analysisHistory = analysisHistory.slice(0, 10); // Keep last 10
-
-        localStorage.setItem('stock_history', JSON.stringify(analysisHistory));
-        renderHistory();
-
-        // Also update Bullish Radar
-        if (consensus.includes("Bullish")) {
-            const radarItem = {
-                ticker,
-                consensus,
-                date: new Date().toLocaleDateString(),
-                timestamp: Date.now()
-            };
-            bullishRadar = bullishRadar.filter(item => item.ticker !== ticker);
-            bullishRadar.unshift(radarItem);
-            bullishRadar = bullishRadar.slice(0, 10);
-            localStorage.setItem('bullish_radar', JSON.stringify(bullishRadar));
+    const fetchSharedContent = async () => {
+        try {
+            const [histRes, radarRes] = await Promise.all([
+                fetch('/api/history'),
+                fetch('/api/radar')
+            ]);
+            analysisHistory = await histRes.json();
+            bullishRadar = await radarRes.json();
+            renderHistory();
             renderBullishRadar();
-        } else {
-            // If rating changed to non-bullish, remove it
-            const prevLen = bullishRadar.length;
-            bullishRadar = bullishRadar.filter(item => item.ticker !== ticker);
-            if (bullishRadar.length !== prevLen) {
-                localStorage.setItem('bullish_radar', JSON.stringify(bullishRadar));
-                renderBullishRadar();
-            }
+        } catch (err) {
+            console.error("Failed to load shared content:", err);
         }
     };
 
@@ -170,8 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             renderDashboard(data);
-            saveToHistory(data.ticker, data.consensus);
-            updatePersonaWatchlists(data.ticker, data.personas);
+            fetchSharedContent(); // Refresh shared lists
         } catch (err) {
             console.error(err);
             alert("Failed to reach the consulting spirits. Is the server running?");
@@ -312,34 +254,47 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             // Card Click Event for Modal
-            card.addEventListener('click', () => {
+            card.addEventListener('click', async () => {
+                // Show initial modal with reasoning
                 modalBody.innerHTML = `
                     <div class="modal-details">
-                    <h2>${persona}'s Reasoning</h2>
-                    <p>${result.details || "No further details available."}</p>
+                        <h2>${persona}'s Reasoning</h2>
+                        <p>${result.details || "No further details available."}</p>
+                        <div id="modalWatchlist" class="watchlist-section">
+                            <span class="modal-books-title">🕒 Loading shared picks...</span>
+                        </div>
+                        <span class="modal-books-title">Referenced Wisdom:</span>
+                        <div class="strategy-books">
+                            ${result.books.map(book => `<span class="book-tag">${book}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                modalOverlay.classList.remove('hidden');
 
-                    ${personaWatchlists[persona] && personaWatchlists[persona].length > 0 ? `
-                        <div class="watchlist-section">
-                            <span class="modal-books-title">🏆 ${persona}'s Top Picks</span>
+                // Fetch shared picks for this persona
+                try {
+                    const pickRes = await fetch(`/api/persona_picks?persona=${persona}`);
+                    const picks = await pickRes.json();
+                    const watchlistEl = document.getElementById('modalWatchlist');
+
+                    if (picks && picks.length > 0) {
+                        watchlistEl.innerHTML = `
+                            <span class="modal-books-title">🏆 Shared Hall of Fame</span>
                             <div class="watchlist-grid">
-                                ${personaWatchlists[persona].map(item => `
+                                ${picks.map(item => `
                                     <div class="watchlist-item glass-low" title="Added: ${item.date}" onclick="document.getElementById('tickerInput').value='${item.ticker}'; document.getElementById('analyzeBtn').click(); document.getElementById('closeModal').click();">
                                         <strong>${item.ticker}</strong>
                                         <span class="mini-rating ${item.rating.includes('Strong') ? 'strong-buy' : 'buy'}">${item.rating}</span>
                                     </div>
                                 `).join('')}
                             </div>
-                        </div>
-                        ` : ''}
-
-                    <span class="modal-books-title">Referenced Wisdom:</span>
-                    <div class="strategy-books">
-                        ${result.books.map(book => `<span class="book-tag">${book}</span>`).join('')}
-                    </div>
-                </div>
-                    </div>
-                `;
-                modalOverlay.classList.remove('hidden');
+                        `;
+                    } else {
+                        watchlistEl.innerHTML = '<p class="text-secondary" style="font-size: 0.8rem; margin-top: 10px;">No shared picks for this persona yet.</p>';
+                    }
+                } catch (err) {
+                    console.error("Failed to load picks:", err);
+                }
             });
 
             councilGrid.appendChild(card);
@@ -387,6 +342,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initial Render
-    renderHistory();
-    renderBullishRadar();
+    fetchSharedContent();
 });

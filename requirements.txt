@@ -4,3 +4,5 @@ pandas
 yfinance
 requests
 gunicorn
+flask-sqlalchemy
+psycopg2-binary
