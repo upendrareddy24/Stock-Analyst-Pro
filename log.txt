@@ -1,0 +1,16 @@
+d135417 feat: Unified Analyst Mastermind + Portfolio Tracker (Two-in-One App)
+d6e569f feat: Autonomous Unified Mastermind with Background Scanner and Hub UI
+60c9e95 feat: Added OCR support and Screenshot Paste (Ctrl+V) for Portfolio management
+fe4052e feat: Integrated Portfolio Management UI into Mastermind
+4062aa9 feat: UNIFIED Analyst Mastermind (Integrated internal Strategy Tracker logic)
+2fa7836 feat: Add Strategy Feed and Auto-Consult integration
+a8ff8d0 fix: Trim whitespace from ticker input
+24021a4 feat: Full Collaborative Dashboard (Shared History, Radar, and Persona Picks)
+487414e feat: Add Technical Vital Signs panel (Squeeze, RSI, Volume, MACD)
+4e5c738 feat: Implement Master Score (0-100) and Trade Plan generation
+071d35e feat: Add Bullish Radar and fix news feed rendering
+d29971b fix(style): Reduce sidebar width to 200px (15% layout)
+917282d feat: Implement Persona Watchlists and standardize API response
+beb0359 Implement Priority Recommendation and Interactive Analyst Commentary
+02130ee Add mobile responsiveness and final walkthrough updates
+64a7d72 Initial commit with caching and Heroku config

@@ -1,13 +1,3 @@
-try:
-    import pytesseract
-except ImportError:
-    pytesseract = None
-
-try:
-    from PIL import Image
-except ImportError:
-    Image = None
-
 import yfinance as yf
 import pandas as pd
 import re
@@ -36,21 +26,6 @@ def fetch_current_price(ticker):
     except Exception as e:
         print(f"Error fetching price for {ticker}: {e}")
         return None
-
-def process_screenshot(file_path):
-    if not pytesseract or not Image:
-        print("pytesseract or PIL not installed. Cannot process screenshot.")
-        return []
-        
-    try:
-        text = pytesseract.image_to_string(Image.open(file_path))
-        # Find anything that looks like a ticker (1-6 uppercase letters)
-        tickers = re.findall(r'\b[A-Z]{1,6}\b', text)
-        ignore_set = {'WATCHLIST', 'SYMBOL', 'DESCRIPTION', 'LAST', 'PRICE', 'CHANGE', 'VOLUME', 'HIGH', 'LOW', 'OPEN', 'CLOSE', 'NET', 'CHG'}
-        return list(set([t for t in tickers if t not in ignore_set]))
-    except Exception as e:
-        print(f"Error processing screenshot: {e}")
-        return []
 
 def process_excel(file_path):
     """Smart ticker extraction with multi-stage fallback."""

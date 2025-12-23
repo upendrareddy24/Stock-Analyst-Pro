@@ -1,9 +1,10 @@
 import os
 import re
 from flask import Flask, request, jsonify, send_from_directory
-from collaborative_models import db, SharedHistory, BullishRadar, PersonaPick
+from collaborative_models import db, SharedHistory, BullishRadar, PersonaPick, Stock
 from analyst_engine import AnalystEngine
 from data_orchestrator import DataOrchestrator
+from utils import fetch_current_price, process_excel
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
@@ -15,6 +16,10 @@ if not os.path.exists(os.path.join(basedir, 'instance')):
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', f'sqlite:///{db_path}').replace('postgres://', 'postgresql://')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = 'uploads'
+
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 db.init_app(app)
 
@@ -93,6 +98,69 @@ def get_persona_picks():
     else:
         picks = PersonaPick.query.order_by(PersonaPick.timestamp.desc()).limit(20).all()
     return jsonify([p.to_dict() for p in picks])
+
+# --- STRATEGY TRACKER LOGIC (Unified) ---
+
+@app.route('/api/stocks', methods=['GET'])
+def get_stocks():
+    stocks = Stock.query.all()
+    return jsonify([s.to_dict() for s in stocks])
+
+@app.route('/api/add_stock', methods=['POST'])
+def add_stock():
+    data = request.json
+    ticker = data.get('ticker').upper()
+    strategy = data.get('strategy')
+    
+    price_data = fetch_current_price(ticker)
+    if not price_data:
+        return jsonify({'error': 'Could not fetch price for ticker'}), 400
+        
+    new_stock = Stock(
+        ticker=ticker,
+        strategy=strategy,
+        entry_price=price_data['price'],
+        current_price=price_data['price'],
+        daily_change=price_data['daily_change']
+    )
+    db.session.add(new_stock)
+    db.session.commit()
+    return jsonify(new_stock.to_dict())
+
+@app.route('/api/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['file']
+    strategy = request.form.get('strategy')
+    
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+        
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(file_path)
+    
+    tickers = process_excel(file_path)
+    print(f"DEBUG: Extracted {len(tickers)} tickers for Strategy {strategy}")
+    
+    added_stocks_objects = []
+    for ticker in tickers:
+        ticker = ticker.upper()
+        price_data = fetch_current_price(ticker)
+        if price_data:
+            new_stock = Stock(
+                ticker=ticker,
+                strategy=strategy,
+                entry_price=price_data['price'],
+                current_price=price_data['price'],
+                daily_change=price_data['daily_change']
+            )
+            db.session.add(new_stock)
+            added_stocks_objects.append(new_stock)
+            
+    db.session.commit()
+    return jsonify([s.to_dict() for s in added_stocks_objects])
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
