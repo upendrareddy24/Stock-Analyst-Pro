@@ -33,6 +33,18 @@
 
         <div class="workspace-grid">
             <aside class="history-sidebar glass">
+                <div class="nav-section">
+                    <button id="viewCouncilBtn" class="nav-item active">
+                        <i class="fas fa-brain"></i>
+                        <span>Council Analysis</span>
+                    </button>
+                    <button id="viewPortfolioBtn" class="nav-item">
+                        <i class="fas fa-folders"></i>
+                        <span>Strategy Portfolio</span>
+                    </button>
+                    <div class="nav-divider"></div>
+                </div>
+
                 <div class="bullish-section">
                     <h3><i class="fas fa-gem"></i> Bullish Radar</h3>
                     <div id="bullishList" class="history-list">
@@ -40,23 +52,7 @@
                     </div>
                 </div>
 
-                <div class="strategy-feed-section">
-                    <div class="section-header-compact">
-                        <h3><i class="fas fa-rss"></i> Strategy Feeds</h3>
-                        <div class="header-actions">
-                            <button id="openManageBtn" class="sync-btn" title="Manage Portfolio">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                            <button id="syncStrategyBtn" class="sync-btn" title="Refresh Feed">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="strategyFeedList" class="history-list">
-                        <p class="empty-msg">No tickers found. Add some to get started!</p>
-                    </div>
-                </div>
-
+                <!-- Scanner Status remains in sidebar for both views -->
                 <div class="scanner-status-card glass hidden" id="scannerStatus">
                     <div class="scanner-header">
                         <div class="pulse-icon"></div>
@@ -78,105 +74,127 @@
             </aside>
 
             <main id="dashboard" class="hidden">
-                <section class="priority-section glass" id="priorityCard">
-                    <div class="priority-header">
-                        <span class="priority-label">Priority Action</span>
-                        <h2 id="priorityAction">...</h2>
-                    </div>
-                    <div class="priority-details">
-                        <p id="priorityReasoning">...</p>
-                        <div class="metrics-row">
-                            <div class="confidence-meter">
-                                <span>Confidence: <strong id="priorityConfidence">...</strong></span>
+                <div id="councilView" class="view-content">
+                    <section class="priority-section glass" id="priorityCard">
+                        <div class="priority-header">
+                            <span class="priority-label">Priority Action</span>
+                            <h2 id="priorityAction">...</h2>
+                        </div>
+                        <div class="priority-details">
+                            <p id="priorityReasoning">...</p>
+                            <div class="metrics-row">
+                                <div class="confidence-meter">
+                                    <span>Confidence: <strong id="priorityConfidence">...</strong></span>
+                                </div>
+                                <div id="masterScoreContainer" class="master-score-badge hidden">
+                                    <span class="score-value" id="masterScoreValue">--</span>
+                                    <span class="score-label" id="masterScoreLabel">Neutral</span>
+                                </div>
                             </div>
-                            <div id="masterScoreContainer" class="master-score-badge hidden">
-                                <span class="score-value" id="masterScoreValue">--</span>
-                                <span class="score-label" id="masterScoreLabel">Neutral</span>
+                        </div>
+
+                        <div id="tradePlanCard" class="trade-plan-card hidden">
+                            <div class="trade-header">
+                                <i class="fas fa-chess-board"></i> Trade Plan
                             </div>
+                            <div class="trade-grid">
+                                <div class="trade-level">
+                                    <span>Entry Zone</span>
+                                    <strong id="tpEntry">--</strong>
+                                </div>
+                                <div class="trade-level">
+                                    <span>Target</span>
+                                    <strong id="tpTarget" class="text-success">--</strong>
+                                </div>
+                                <div class="trade-level">
+                                    <span>Stop Loss</span>
+                                    <strong id="tpStop" class="text-danger">--</strong>
+                                </div>
+                            </div>
+                    </section>
+
+                    <!-- Technical Vital Signs -->
+                    <section class="vital-signs-section glass" style="margin-top: 1.5rem; padding: 1rem;">
+                        <div class="section-header" style="margin-bottom: 1rem;">
+                            <h3><i class="fas fa-heartbeat"></i> Technical Vital Signs</h3>
+                        </div>
+                        <div class="vital-grid">
+                            <div class="vital-card">
+                                <span class="vital-label">Volatility Squeeze</span>
+                                <div class="vital-value" id="vitalSqueeze">--</div>
+                                <small id="vitalSqueezeDetail" class="text-secondary">--</small>
+                            </div>
+                            <div class="vital-card">
+                                <span class="vital-label">RSI (14)</span>
+                                <div class="vital-value" id="vitalRSI">--</div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" id="vitalRSIBar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="vital-card">
+                                <span class="vital-label">Relative Volume</span>
+                                <div class="vital-value" id="vitalVol">--</div>
+                                <small id="vitalVolDetail" class="text-secondary">vs 20d Avg</small>
+                            </div>
+                            <div class="vital-card">
+                                <span class="vital-label">MACD Momentum</span>
+                                <div class="vital-value" id="vitalMACD">--</div>
+                                <small id="vitalMACDDetail" class="text-secondary">--</small>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="ticker-summary glass">
+                        <div class="ticker-header">
+                            <h2 id="tickerName">AAPL</h2>
+                            <span id="tickerPrice" class="price">$150.00</span>
+                        </div>
+                        <div class="consensus-badge" id="overallConsensus">
+                            Strong Bullish Consensus
+                        </div>
+                    </section>
+
+                    <section class="strategies-section">
+                        <h3><i class="fas fa-bolt"></i> Strategy Spotlight</h3>
+                        <div id="strategiesList" class="strategy-grid">
+                            <!-- Strategies will be injected here -->
+                        </div>
+                    </section>
+
+                    <section class="analyst-council">
+                        <h3><i class="fas fa-users-viewfinder"></i> The Analyst Council</h3>
+                        <div id="councilGrid" class="council-grid">
+                            <!-- Persona cards will be injected here -->
+                        </div>
+                    </section>
+
+                    <section class="news-section">
+                        <h3><i class="fas fa-newspaper"></i> Catalyst News Feed</h3>
+                        <div id="newsFeed" class="news-feed-grid">
+                            <!-- News items will be injected here -->
+                        </div>
+                    </section>
+                </div> <!-- End councilView -->
+
+                <!-- Strategy Portfolio View -->
+                <div id="portfolioView" class="view-content hidden">
+                    <div class="view-header">
+                        <h2><i class="fas fa-folder-open"></i> Strategy Portfolio</h2>
+                        <div class="header-actions">
+                            <button id="openManageBtnPortfolio" class="action-btn-small">
+                                <i class="fas fa-plus"></i> Add Stock
+                            </button>
+                            <button id="updatePricesBtn" class="sync-btn" title="Update Live Prices">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <div id="tradePlanCard" class="trade-plan-card hidden">
-                        <div class="trade-header">
-                            <i class="fas fa-chess-board"></i> Trade Plan
-                        </div>
-                        <div class="trade-grid">
-                            <div class="trade-level">
-                                <span>Entry Zone</span>
-                                <strong id="tpEntry">--</strong>
-                            </div>
-                            <div class="trade-level">
-                                <span>Target</span>
-                                <strong id="tpTarget" class="text-success">--</strong>
-                            </div>
-                            <div class="trade-level">
-                                <span>Stop Loss</span>
-                                <strong id="tpStop" class="text-danger">--</strong>
-                            </div>
-                        </div>
-                </section>
-
-                <!-- Technical Vital Signs -->
-                <section class="vital-signs-section glass" style="margin-top: 1.5rem; padding: 1rem;">
-                    <div class="section-header" style="margin-bottom: 1rem;">
-                        <h3><i class="fas fa-heartbeat"></i> Technical Vital Signs</h3>
+                    <div id="portfolioGrid" class="portfolio-grid">
+                        <!-- Strategy cards will be injected here -->
+                        <div class="loading-msg">Fetching your strategies...</div>
                     </div>
-                    <div class="vital-grid">
-                        <div class="vital-card">
-                            <span class="vital-label">Volatility Squeeze</span>
-                            <div class="vital-value" id="vitalSqueeze">--</div>
-                            <small id="vitalSqueezeDetail" class="text-secondary">--</small>
-                        </div>
-                        <div class="vital-card">
-                            <span class="vital-label">RSI (14)</span>
-                            <div class="vital-value" id="vitalRSI">--</div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" id="vitalRSIBar" style="width: 0%"></div>
-                            </div>
-                        </div>
-                        <div class="vital-card">
-                            <span class="vital-label">Relative Volume</span>
-                            <div class="vital-value" id="vitalVol">--</div>
-                            <small id="vitalVolDetail" class="text-secondary">vs 20d Avg</small>
-                        </div>
-                        <div class="vital-card">
-                            <span class="vital-label">MACD Momentum</span>
-                            <div class="vital-value" id="vitalMACD">--</div>
-                            <small id="vitalMACDDetail" class="text-secondary">--</small>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="ticker-summary glass">
-                    <div class="ticker-header">
-                        <h2 id="tickerName">AAPL</h2>
-                        <span id="tickerPrice" class="price">$150.00</span>
-                    </div>
-                    <div class="consensus-badge" id="overallConsensus">
-                        Strong Bullish Consensus
-                    </div>
-                </section>
-
-                <section class="strategies-section">
-                    <h3><i class="fas fa-bolt"></i> Strategy Spotlight</h3>
-                    <div id="strategiesList" class="strategy-grid">
-                        <!-- Strategies will be injected here -->
-                    </div>
-                </section>
-
-                <section class="analyst-council">
-                    <h3><i class="fas fa-users-viewfinder"></i> The Analyst Council</h3>
-                    <div id="councilGrid" class="council-grid">
-                        <!-- Persona cards will be injected here -->
-                    </div>
-                </section>
-
-                <section class="news-section">
-                    <h3><i class="fas fa-newspaper"></i> Catalyst News Feed</h3>
-                    <div id="newsFeed" class="news-feed-grid">
-                        <!-- News items will be injected here -->
-                    </div>
-                </section>
+                </div>
             </main>
 
             <div id="loader" class="loader-container hidden">

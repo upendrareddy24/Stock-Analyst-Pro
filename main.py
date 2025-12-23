@@ -250,6 +250,24 @@ def upload_file():
     db.session.commit()
     return jsonify([s.to_dict() for s in added_stocks_objects])
 
+@app.route('/api/delete_stock/<int:stock_id>', methods=['DELETE'])
+def delete_stock(stock_id):
+    stock = Stock.query.get_or_404(stock_id)
+    db.session.delete(stock)
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/api/update_prices', methods=['GET'])
+def update_prices():
+    stocks = Stock.query.all()
+    for stock in stocks:
+        price_data = fetch_current_price(stock.ticker)
+        if price_data:
+            stock.current_price = price_data['price']
+            stock.daily_change = price_data['daily_change']
+    db.session.commit()
+    return jsonify([s.to_dict() for s in stocks])
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)

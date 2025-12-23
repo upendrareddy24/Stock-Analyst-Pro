@@ -561,6 +561,125 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(pollScannerStatus, 5000);
     pollScannerStatus();
 
+    // --- VIEW SWITCHING LOGIC ---
+    const viewCouncilBtn = document.getElementById('viewCouncilBtn');
+    const viewPortfolioBtn = document.getElementById('viewPortfolioBtn');
+    const councilView = document.getElementById('councilView');
+    const portfolioView = document.getElementById('portfolioView');
+    const portfolioGrid = document.getElementById('portfolioGrid');
+    const openManageBtnPortfolio = document.getElementById('openManageBtnPortfolio');
+    const updatePricesBtn = document.getElementById('updatePricesBtn');
+
+    const switchView = (viewName) => {
+        if (viewName === 'council') {
+            councilView.classList.remove('hidden');
+            portfolioView.classList.add('hidden');
+            viewCouncilBtn.classList.add('active');
+            viewPortfolioBtn.classList.remove('active');
+        } else {
+            councilView.classList.add('hidden');
+            portfolioView.classList.remove('hidden');
+            viewCouncilBtn.classList.remove('active');
+            viewPortfolioBtn.classList.add('active');
+            fetchPortfolio();
+        }
+    };
+
+    viewCouncilBtn.addEventListener('click', () => switchView('council'));
+    viewPortfolioBtn.addEventListener('click', () => switchView('portfolio'));
+    openManageBtnPortfolio.addEventListener('click', () => manageModal.classList.remove('hidden'));
+
+    // --- PORTFOLIO LOGIC ---
+    const fetchPortfolio = async () => {
+        portfolioGrid.innerHTML = '<div class="loading-msg">Refreshing portfolio...</div>';
+        try {
+            const resp = await fetch('/api/stocks');
+            const stocks = await resp.json();
+            renderPortfolio(stocks);
+        } catch (err) {
+            console.error("Failed to fetch portfolio:", err);
+            portfolioGrid.innerHTML = '<div class="loading-msg error">Failed to load portfolio.</div>';
+        }
+    };
+
+    const deletePortfolioStock = async (id) => {
+        if (!confirm('Remove this stock from tracker?')) return;
+        try {
+            await fetch(`/api/delete_stock/${id}`, { method: 'DELETE' });
+            fetchPortfolio();
+        } catch (err) {
+            console.error("Delete failed:", err);
+        }
+    };
+
+    updatePricesBtn.addEventListener('click', async () => {
+        updatePricesBtn.classList.add('loading');
+        try {
+            await fetch('/api/update_prices');
+            fetchPortfolio();
+        } catch (err) {
+            console.error("Price update failed:", err);
+        } finally {
+            updatePricesBtn.classList.remove('loading');
+        }
+    });
+
+    const renderPortfolio = (stocks) => {
+        portfolioGrid.innerHTML = '';
+        const groups = {};
+
+        stocks.forEach(s => {
+            if (!groups[s.strategy]) groups[s.strategy] = [];
+            groups[s.strategy].push(s);
+        });
+
+        if (Object.keys(groups).length === 0) {
+            portfolioGrid.innerHTML = '<div class="loading-msg">No strategies found. Add some tickers to start tracking!</div>';
+            return;
+        }
+
+        Object.entries(groups).forEach(([strategy, tickers]) => {
+            const card = document.createElement('div');
+            card.className = 'portfolio-strategy-card glass';
+
+            const tickerListHtml = tickers.map(t => `
+                <div class="stock-row-compact">
+                    <div class="stock-main-info">
+                        <span class="stock-symbol">${t.ticker}</span>
+                        <span class="stock-price-sub">Entry: $${t.entry_price.toFixed(2)} | Cur: $${t.current_price.toFixed(2)}</span>
+                    </div>
+                    <div class="stock-perf-info">
+                        <span class="stock-roi ${t.roi >= 0 ? 'txt-pos' : 'txt-neg'}">${t.roi >= 0 ? '+' : ''}${t.roi.toFixed(2)}%</span>
+                        <span class="stock-daily ${t.daily_change >= 0 ? 'txt-pos' : 'txt-neg'}">${t.daily_change >= 0 ? '+' : ''}${t.daily_change.toFixed(2)}%</span>
+                        <button class="delete-stock-btn" onclick="app.deleteStock(${t.id})" title="Remove"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            `).join('');
+
+            card.innerHTML = `
+                <div class="strat-card-header">
+                    <h3>${strategy}</h3>
+                    <div class="strat-card-actions">
+                        <button class="auto-consult-btn" onclick="app.autoConsult('${strategy}', ${JSON.stringify(tickers.map(t => t.ticker)).replace(/"/g, '&quot;')})">Vette Group</button>
+                    </div>
+                </div>
+                <div class="stock-table-compact">
+                    ${tickerListHtml}
+                </div>
+            `;
+            portfolioGrid.appendChild(card);
+        });
+    };
+
+    // Expose functions for onclick handlers
+    window.app = {
+        deleteStock: deletePortfolioStock,
+        autoConsult: (strategy, tickers) => {
+            const btn = document.createElement('button'); // Dummy btn for the existing function
+            autoConsultStrategy(strategy, tickers, btn);
+        }
+    };
+
     closeModal.addEventListener('click', () => modalOverlay.classList.add('hidden'));
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) modalOverlay.classList.add('hidden');
