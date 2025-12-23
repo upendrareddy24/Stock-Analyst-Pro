@@ -1,5 +1,7 @@
 import os
 import re
+import threading
+import time
 from flask import Flask, request, jsonify, send_from_directory
 from collaborative_models import db, SharedHistory, BullishRadar, PersonaPick, Stock
 from analyst_engine import AnalystEngine
@@ -29,9 +31,90 @@ with app.app_context():
 orchestrator = DataOrchestrator()
 engine = AnalystEngine("books_db.json")
 
+# Scanner Status Tracking
+scanner_status = {
+    "is_running": False,
+    "last_ticker": None,
+    "total_scanned_today": 0,
+    "last_bullish_found": None
+}
+
+def autonomous_scanner():
+    """Background thread that automatically analyzes all tracked stocks."""
+    global scanner_status
+    scanner_status["is_running"] = True
+    
+    while True:
+        try:
+            with app.app_context():
+                stocks = Stock.query.all()
+                if not stocks:
+                    time.sleep(60) # Wait for stocks to be added
+                    continue
+                
+                for stock in stocks:
+                    ticker = stock.ticker.upper().strip()
+                    scanner_status["last_ticker"] = ticker
+                    
+                    try:
+                        df = orchestrator.get_stock_data(ticker)
+                        if df is None or df.empty:
+                            continue
+                            
+                        news = orchestrator.get_ticker_news(ticker)
+                        analysis = engine.analyze_ticker(ticker, df, news)
+                        
+                        # Update Bullish Radar
+                        if "Bullish" in analysis['consensus']:
+                            scanner_status["last_bullish_found"] = ticker
+                            existing_radar = BullishRadar.query.filter_by(ticker=ticker).first()
+                            if existing_radar:
+                                existing_radar.timestamp = db.func.now()
+                            else:
+                                db.session.add(BullishRadar(ticker=ticker, consensus=analysis['consensus']))
+                        else:
+                            # If it was in radar but not bullish anymore, remove it
+                            BullishRadar.query.filter_by(ticker=ticker).delete()
+
+                        # Update Persona Picks
+                        for persona, result in analysis['personas'].items():
+                            if "Buy" in result['rating']:
+                                existing_pick = PersonaPick.query.filter_by(persona=persona, ticker=ticker).first()
+                                if existing_pick:
+                                    existing_pick.timestamp = db.func.now()
+                                    existing_pick.rating = result['rating']
+                                else:
+                                    db.session.add(PersonaPick(persona=persona, ticker=ticker, rating=result['rating']))
+                            else:
+                                PersonaPick.query.filter_by(persona=persona, ticker=ticker).delete()
+
+                        db.session.commit()
+                        scanner_status["total_scanned_today"] += 1
+                        
+                    except Exception as e:
+                        print(f"Scanner error analyzing {ticker}: {e}")
+                    
+                    # Pace the scanner to avoid rate limits (10 seconds between stocks)
+                    time.sleep(10)
+                    
+            # Wait 30 minutes before starting the next full cycle
+            time.sleep(1800)
+            
+        except Exception as e:
+            print(f"Scanner fatal error: {e}")
+            time.sleep(60)
+
+# Start Autonomous Scanner in a background thread
+scanner_thread = threading.Thread(target=autonomous_scanner, daemon=True)
+scanner_thread.start()
+
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
+
+@app.route('/api/scanner_status', methods=['GET'])
+def get_scanner_status():
+    return jsonify(scanner_status)
 
 @app.route('/api/analyze', methods=['GET'])
 def analyze():

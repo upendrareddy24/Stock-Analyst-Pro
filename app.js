@@ -528,6 +528,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     bulkUploadInput.addEventListener('change', (e) => handleUpload(e.target.files[0]));
 
+    // --- SCANNER STATUS POLLING ---
+    const scannerStatusCard = document.getElementById('scannerStatus');
+    const scanningNow = document.getElementById('scanningNow');
+    const totalScanned = document.getElementById('totalScanned');
+    let lastTotalScanned = 0;
+
+    const pollScannerStatus = async () => {
+        try {
+            const resp = await fetch('/api/scanner_status');
+            const status = await resp.json();
+
+            if (status.is_running) {
+                scannerStatusCard.classList.remove('hidden');
+                scanningNow.textContent = `Scanning: ${status.last_ticker || '--'}`;
+                totalScanned.textContent = `Scanned Today: ${status.total_scanned_today}`;
+
+                // If new results found, refresh radar/history
+                if (status.total_scanned_today !== lastTotalScanned) {
+                    fetchSharedContent();
+                    lastTotalScanned = status.total_scanned_today;
+                }
+            } else {
+                scannerStatusCard.classList.add('hidden');
+            }
+        } catch (err) {
+            console.error("Failed to poll scanner status:", err);
+        }
+    };
+
+    // Start status polling
+    setInterval(pollScannerStatus, 5000);
+    pollScannerStatus();
+
     closeModal.addEventListener('click', () => modalOverlay.classList.add('hidden'));
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) modalOverlay.classList.add('hidden');
