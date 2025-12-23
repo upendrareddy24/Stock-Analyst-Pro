@@ -225,9 +225,11 @@
                         <div class="input-group-vertical">
                             <label>Bulk Upload (Excel/CSV/Screenshot)</label>
                             <input type="file" id="bulkUploadInput" class="hidden">
-                            <button id="triggerUploadBtn" class="upload-btn-full">
-                                <i class="fas fa-cloud-upload-alt"></i> Select File
-                            </button>
+                            <div class="paste-zone" id="pasteZone">
+                                <i class="fas fa-clipboard-check"></i>
+                                <span>Paste Screenshot (Ctrl+V)</span>
+                                <small>OR Click to Select File</small>
+                            </div>
                         </div>
                     </div>
 

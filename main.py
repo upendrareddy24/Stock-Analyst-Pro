@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from collaborative_models import db, SharedHistory, BullishRadar, PersonaPick, Stock
 from analyst_engine import AnalystEngine
 from data_orchestrator import DataOrchestrator
-from utils import fetch_current_price, process_excel
+from utils import fetch_current_price, process_excel, process_screenshot
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
@@ -141,7 +141,12 @@ def upload_file():
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     file.save(file_path)
     
-    tickers = process_excel(file_path)
+    # Detect file type
+    if file.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+        tickers = process_screenshot(file_path)
+    else:
+        tickers = process_excel(file_path)
+        
     print(f"DEBUG: Extracted {len(tickers)} tickers for Strategy {strategy}")
     
     added_stocks_objects = []

@@ -476,10 +476,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    triggerUploadBtn.addEventListener('click', () => bulkUploadInput.click());
+    const pasteZone = document.getElementById('pasteZone');
 
-    bulkUploadInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
+    const handleUpload = async (file) => {
         if (!file) return;
 
         const strategy = manageStrategy.value.trim();
@@ -487,8 +486,9 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('file', file);
         formData.append('strategy', strategy);
 
-        triggerUploadBtn.disabled = true;
-        triggerUploadBtn.textContent = 'Processing...';
+        pasteZone.classList.add('active');
+        const originalContent = pasteZone.innerHTML;
+        pasteZone.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Extracting Tickers...</span>`;
 
         try {
             const resp = await fetch('/api/upload', {
@@ -502,11 +502,31 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             showManageStatus("Upload failed. Check file format.", "error");
         } finally {
-            triggerUploadBtn.disabled = false;
-            triggerUploadBtn.textContent = 'Select File';
+            pasteZone.classList.remove('active');
+            pasteZone.innerHTML = originalContent;
             bulkUploadInput.value = '';
         }
+    };
+
+    pasteZone.addEventListener('click', () => bulkUploadInput.click());
+
+    // Paste Handle
+    window.addEventListener('paste', async (e) => {
+        if (manageModal.classList.contains('hidden')) return;
+
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                // Create a generic filename for the pasted image
+                const file = new File([blob], `pasted_screenshot_${Date.now()}.png`, { type: "image/png" });
+                handleUpload(file);
+                break;
+            }
+        }
     });
+
+    bulkUploadInput.addEventListener('change', (e) => handleUpload(e.target.files[0]));
 
     closeModal.addEventListener('click', () => modalOverlay.classList.add('hidden'));
     modalOverlay.addEventListener('click', (e) => {

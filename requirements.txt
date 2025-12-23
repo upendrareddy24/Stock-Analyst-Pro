@@ -6,3 +6,5 @@ requests
 gunicorn
 flask-sqlalchemy
 psycopg2-binary
+pytesseract
+Pillow
