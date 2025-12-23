@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const STRATEGY_TRACKER_URL = 'https://strategystocktracker-6a0b0ef8a437.herokuapp.com';
+    const STRATEGY_TRACKER_URL = ''; // Relative paths for unified app
     const syncStrategyBtn = document.getElementById('syncStrategyBtn');
     const strategyFeedList = document.getElementById('strategyFeedList');
 
