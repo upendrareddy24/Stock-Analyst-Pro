@@ -43,12 +43,17 @@
                 <div class="strategy-feed-section">
                     <div class="section-header-compact">
                         <h3><i class="fas fa-rss"></i> Strategy Feeds</h3>
-                        <button id="syncStrategyBtn" class="sync-btn" title="Sync with PortfolioTracker">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
+                        <div class="header-actions">
+                            <button id="openManageBtn" class="sync-btn" title="Manage Portfolio">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button id="syncStrategyBtn" class="sync-btn" title="Refresh Feed">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
                     </div>
                     <div id="strategyFeedList" class="history-list">
-                        <p class="empty-msg">Sync to load strategies...</p>
+                        <p class="empty-msg">No tickers found. Add some to get started!</p>
                     </div>
                 </div>
 
@@ -187,6 +192,46 @@
                 <button id="closeModal" class="close-btn"><i class="fas fa-times"></i></button>
                 <div id="modalBody">
                     <!-- Detailed analysis will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Portfolio Modal -->
+        <div id="manageModal" class="modal-overlay hidden">
+            <div class="modal-content glass" style="max-width: 500px;">
+                <button id="closeManageModal" class="close-btn"><i class="fas fa-times"></i></button>
+                <div class="modal-details">
+                    <h2><i class="fas fa-folder-plus"></i> Manage Portfolio</h2>
+                    <p class="text-secondary" style="font-size: 0.9rem; margin-bottom: 1.5rem;">Add tickers to your
+                        internal strategy feeds for rapid expert analysis.</p>
+
+                    <div class="manage-form">
+                        <div class="input-group-vertical">
+                            <label>Strategy Name</label>
+                            <input type="text" id="manageStrategy" placeholder="e.g. POS BO/SQ 4"
+                                value="Mastermind Picks">
+                        </div>
+
+                        <div class="input-group-vertical">
+                            <label>Add Single Ticker</label>
+                            <div class="ticker-add-row">
+                                <input type="text" id="manageTicker" placeholder="e.g. NVDA">
+                                <button id="addSingleBtn" class="action-btn-small">Add</button>
+                            </div>
+                        </div>
+
+                        <div class="divider"><span>OR</span></div>
+
+                        <div class="input-group-vertical">
+                            <label>Bulk Upload (Excel/CSV/Screenshot)</label>
+                            <input type="file" id="bulkUploadInput" class="hidden">
+                            <button id="triggerUploadBtn" class="upload-btn-full">
+                                <i class="fas fa-cloud-upload-alt"></i> Select File
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="manageStatus" class="status-msg hidden"></div>
                 </div>
             </div>
         </div>

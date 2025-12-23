@@ -430,6 +430,84 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     };
 
+    // --- PORTFOLIO MANAGEMENT LOGIC ---
+    const manageModal = document.getElementById('manageModal');
+    const openManageBtn = document.getElementById('openManageBtn');
+    const closeManageModal = document.getElementById('closeManageModal');
+    const manageStrategy = document.getElementById('manageStrategy');
+    const manageTicker = document.getElementById('manageTicker');
+    const addSingleBtn = document.getElementById('addSingleBtn');
+    const bulkUploadInput = document.getElementById('bulkUploadInput');
+    const triggerUploadBtn = document.getElementById('triggerUploadBtn');
+    const manageStatus = document.getElementById('manageStatus');
+
+    const showManageStatus = (msg, type = 'success') => {
+        manageStatus.textContent = msg;
+        manageStatus.className = `status-msg ${type}`;
+        manageStatus.classList.remove('hidden');
+        setTimeout(() => manageStatus.classList.add('hidden'), 5000);
+    };
+
+    openManageBtn.addEventListener('click', () => manageModal.classList.remove('hidden'));
+    closeManageModal.addEventListener('click', () => manageModal.classList.add('hidden'));
+
+    addSingleBtn.addEventListener('click', async () => {
+        const ticker = manageTicker.value.trim().toUpperCase();
+        const strategy = manageStrategy.value.trim();
+        if (!ticker) return;
+
+        addSingleBtn.disabled = true;
+        try {
+            const resp = await fetch('/api/add_stock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticker, strategy })
+            });
+            const data = await resp.json();
+            if (data.error) throw new Error(data.error);
+
+            showManageStatus(`Added ${ticker} to ${strategy}`);
+            manageTicker.value = '';
+            fetchStrategyTickers();
+        } catch (err) {
+            showManageStatus(err.message, 'error');
+        } finally {
+            addSingleBtn.disabled = false;
+        }
+    });
+
+    triggerUploadBtn.addEventListener('click', () => bulkUploadInput.click());
+
+    bulkUploadInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const strategy = manageStrategy.value.trim();
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('strategy', strategy);
+
+        triggerUploadBtn.disabled = true;
+        triggerUploadBtn.textContent = 'Processing...';
+
+        try {
+            const resp = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+            showManageStatus(`Successfully imported ${data.length} tickers!`);
+            fetchStrategyTickers();
+            setTimeout(() => manageModal.classList.add('hidden'), 1500);
+        } catch (err) {
+            showManageStatus("Upload failed. Check file format.", "error");
+        } finally {
+            triggerUploadBtn.disabled = false;
+            triggerUploadBtn.textContent = 'Select File';
+            bulkUploadInput.value = '';
+        }
+    });
+
     closeModal.addEventListener('click', () => modalOverlay.classList.add('hidden'));
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) modalOverlay.classList.add('hidden');
