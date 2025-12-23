@@ -324,6 +324,112 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const STRATEGY_TRACKER_URL = 'https://strategystocktracker-6a0b0ef8a437.herokuapp.com';
+    const syncStrategyBtn = document.getElementById('syncStrategyBtn');
+    const strategyFeedList = document.getElementById('strategyFeedList');
+
+    const fetchStrategyTickers = async () => {
+        syncStrategyBtn.classList.add('loading');
+        try {
+            const resp = await fetch(`${STRATEGY_TRACKER_URL}/api/stocks`);
+            const stocks = await resp.json();
+            renderStrategyFeed(stocks);
+        } catch (err) {
+            console.error("Failed to sync strategies:", err);
+            strategyFeedList.innerHTML = '<p class="text-danger" style="font-size:0.7rem;">Sync failed. Ensure Tracker is live.</p>';
+        } finally {
+            syncStrategyBtn.classList.remove('loading');
+        }
+    };
+
+    const renderStrategyFeed = (stocks) => {
+        if (!stocks || stocks.length === 0) {
+            strategyFeedList.innerHTML = '<p class="empty-msg">No tickers found in Tracker.</p>';
+            return;
+        }
+
+        // Group by strategy
+        const groups = stocks.reduce((acc, stock) => {
+            const strat = stock.strategy || 'Uncategorized';
+            if (!acc[strat]) acc[strat] = [];
+            acc[strat].push(stock.ticker);
+            return acc;
+        }, {});
+
+        strategyFeedList.innerHTML = '';
+        Object.entries(groups).forEach(([strategy, tickers]) => {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'strategy-group';
+
+            groupDiv.innerHTML = `
+                <div class="strategy-title">
+                    <span>${strategy}</span>
+                    <button class="auto-consult-btn" data-strategy="${strategy}">Auto-Consult</button>
+                </div>
+                <div class="strategy-tickers" id="strat-${strategy.replace(/\s+/g, '-')}">
+                    ${tickers.map(t => `<div class="strat-ticker-pill" data-ticker="${t}">${t}</div>`).join('')}
+                </div>
+            `;
+
+            // Ticker pill click
+            groupDiv.querySelectorAll('.strat-ticker-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    tickerInput.value = pill.getAttribute('data-ticker');
+                    handleAnalyze(tickerInput.value);
+                });
+            });
+
+            // Auto-Consult button logic
+            groupDiv.querySelector('.auto-consult-btn').addEventListener('click', (e) => {
+                autoConsultStrategy(strategy, tickers, e.target);
+            });
+
+            strategyFeedList.appendChild(groupDiv);
+        });
+    };
+
+    const autoConsultStrategy = async (strategyName, tickers, btn) => {
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Running...';
+
+        const containerId = `strat-${strategyName.replace(/\s+/g, '-')}`;
+        const container = document.getElementById(containerId);
+
+        for (const ticker of tickers) {
+            const pill = container.querySelector(`[data-ticker="${ticker}"]`);
+            pill.classList.add('loading');
+            pill.style.opacity = '1';
+
+            try {
+                // We reuse the existing handleAnalyze logic but silently
+                const resp = await fetch(`/api/analyze?ticker=${ticker}`);
+                const data = await resp.json();
+
+                if (data.consensus && data.consensus.includes('Bullish')) {
+                    pill.classList.add('analyzed');
+                    pill.innerHTML = `${ticker} <i class="fas fa-check"></i>`;
+                } else {
+                    pill.style.opacity = '0.4';
+                }
+                // Update shared history/radar
+                fetchSharedContent();
+            } catch (err) {
+                pill.classList.add('failed');
+            } finally {
+                pill.classList.remove('loading');
+            }
+            // Small delay to avoid hammering the local server too fast
+            await new Promise(r => setTimeout(r, 500));
+        }
+
+        btn.textContent = 'Complete';
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }, 2000);
+    };
+
     closeModal.addEventListener('click', () => modalOverlay.classList.add('hidden'));
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) modalOverlay.classList.add('hidden');
@@ -334,6 +440,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') handleAnalyze(tickerInput.value);
     });
 
+    syncStrategyBtn.addEventListener('click', fetchStrategyTickers);
+
     demoButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             tickerInput.value = btn.textContent;
@@ -343,4 +451,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial Render
     fetchSharedContent();
+    fetchStrategyTickers(); // Auto-sync on load
 });

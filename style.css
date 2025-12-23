@@ -803,6 +803,7 @@ h3 i {
     color: var(--text-secondary);
     margin-top: auto;
 }
+
 /* Bullish Radar */
 .bullish-section {
     margin-bottom: 2rem;
@@ -915,8 +916,13 @@ h3 i {
     color: var(--text-primary);
 }
 
-.text-success { color: #34d399 !important; }
-.text-danger { color: #f87171 !important; }
+.text-success {
+    color: #34d399 !important;
+}
+
+.text-danger {
+    color: #f87171 !important;
+}
 
 
 /* Vital Signs Grid */
@@ -968,3 +974,116 @@ h3 i {
     transition: width 0.5s ease;
 }
 
+/* Strategy Feed Section */
+.strategy-feed-section {
+    margin-bottom: 2rem;
+}
+
+.section-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.sync-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.sync-btn:hover {
+    background: var(--accent-blue);
+    color: white;
+    transform: rotate(180deg);
+}
+
+.strategy-group {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.strategy-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent-purple);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.auto-consult-btn {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid var(--accent-purple);
+    color: var(--accent-purple);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.auto-consult-btn:hover {
+    background: var(--accent-purple);
+    color: white;
+}
+
+.strategy-tickers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.strat-ticker-pill {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.strat-ticker-pill:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-blue);
+}
+
+.strat-ticker-pill.analyzed {
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+}
+
+.strat-ticker-pill.failed {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+}
+
+.sync-btn.loading i {
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
