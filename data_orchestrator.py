@@ -219,10 +219,12 @@ class DataOrchestrator:
                     # Support new yfinance schema
                     content = item.get("content", {})
                     if content:
+                        click_url_obj = content.get("clickThroughUrl")
+                        click_url = click_url_obj.get("url", "#") if click_url_obj else "#"
                         news.append({
                             "title": content.get("title", "No Title"),
                             "summary": content.get("summary", "Yahoo Finance"),
-                            "url": content.get("clickThroughUrl", {}).get("url", "#"),
+                            "url": click_url,
                             "date": content.get("pubDate", "Recent"),
                             "source": "Yahoo Finance"
                         })
