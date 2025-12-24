@@ -31,11 +31,16 @@ SECTOR_MAP = {
     "Next-Gen Moonshots": ["NNE", "LUNR", "TMC", "QUBT", "PGEN"],
     "AI Growth/Compute": ["PLTR", "ASTS", "VRT", "SMCI", "ARM"],
     "Nuclear/Uranium": ["OKLO", "SMR", "LEU", "UUUU", "CCJ"],
+    "Cybersecurity": ["PANW", "CRWD", "FTNT", "NET", "ZS"],
+    "Defense/Warfare": ["LMT", "RTX", "NOC", "GD", "HWM"],
     "Financials (XLF)": ["JPM", "BAC", "MS", "GS", "WFC"],
     "Healthcare (XLV)": ["LLY", "UNH", "VRTX", "AMGN", "ISRG"],
     "Utilities (XLU)": ["NEE", "DUK", "CEG", "VST", "SRE"],
     "Commodities/Metal": ["GLD", "SLV", "GDX", "FCX", "NEM"],
     "Digital/Crypto": ["IBIT", "MSTR", "COIN", "MARA", "RIOT"],
+    "Retail/Global": ["AMZN", "WMT", "COST", "TGT", "MELI"],
+    "EV/Battery Tech": ["TSLA", "RIVN", "LCID", "ALB", "QS"],
+    "AgriTech/Food": ["DE", "CAT", "CF", "NTR", "ADM"],
     "Semi/Chips": ["NVDA", "AVGO", "MU", "AMD", "TSM"],
     "Software/SaaS": ["MSFT", "CRM", "SAP", "SNOW", "DDOG"]
 }
