@@ -26,6 +26,20 @@ with app.app_context():
 orchestrator = DataOrchestrator()
 engine = AnalystEngine("books_db.json")
 
+# EXPERT TRADER: Sector Watchlist
+SECTOR_MAP = {
+    "Quantum Computing": ["IONQ", "RGTI", "IBM"],
+    "Semi/Chips": ["NVDA", "AMD", "AVGO"],
+    "Energy": ["XOM", "CVX", "SLB"],
+    "Metals/Mining": ["FCX", "NEM", "AA"],
+    "Healthcare/Bio": ["LLY", "UNH", "NVO"],
+    "Finance/Banks": ["JPM", "GS", "MS"],
+    "Data Centers/AI Infra": ["VRT", "ANET", "EQIX"],
+    "Nuclear/SMR": ["SMR", "OKLO", "CEG"],
+    "Aerospace/Defense": ["LMT", "RTX", "NOC"],
+    "Software/SaaS": ["MSFT", "PLTR", "CRM"]
+}
+
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
@@ -105,6 +119,33 @@ def get_persona_picks():
 def get_market_intelligence():
     leads = MarketIntelligence.query.order_by(MarketIntelligence.master_score.desc()).limit(10).all()
     return jsonify([l.to_dict() for l in leads])
+
+@app.route('/api/sector_scout', methods=['GET'])
+def sector_scout():
+    """Ranks leaders within each sector to find the 'Best of Breed'."""
+    results = {}
+    benchmark_df = orchestrator.get_stock_data("SPY")
+    for sector, tickers in SECTOR_MAP.items():
+        sector_results = []
+        for ticker in tickers:
+            try:
+                df = orchestrator.get_stock_data(ticker)
+                if df is not None and not df.empty:
+                    # Minimal analysis for speed in batch mode
+                    # Note: We skip news/options here to stay within Heroku's 30s limit
+                    analysis = engine.analyze_ticker(ticker, df, benchmark_df=benchmark_df)
+                    sector_results.append({
+                        "ticker": ticker,
+                        "score": analysis.get('master_score', {}).get('value', 0),
+                        "label": analysis.get('master_score', {}).get('label', 'Neutral'),
+                        "price": analysis.get('current_price', 0)
+                    })
+            except:
+                continue
+        # Sort by score descending
+        sector_results.sort(key=lambda x: x['score'], reverse=True)
+        results[sector] = sector_results
+    return jsonify(results)
 
 # --- AUTONOMOUS SCANNER ENGINE ---
 def run_autonomous_scanner():

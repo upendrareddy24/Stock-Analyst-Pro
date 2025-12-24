@@ -1253,3 +1253,20 @@ h3 i {
 .sizer-inputs { display: flex; gap: 0.5rem; }
 .sizer-inputs input { width: 70px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 4px; padding: 2px 5px; font-size: 0.7rem; }
 .sizer-result { font-size: 0.7rem; margin-top: 0.5rem; color: #94a3b8; }
+
+/* --- SECTOR SCOUT --- */
+.scout-btn { background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.4); color: #c4b5fd; padding: 0.6rem 1.2rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+.scout-btn:hover { background: rgba(139, 92, 246, 0.3); border-color: #8b5cf6; color: white; transform: translateY(-1px); }
+.modal-lg { max-width: 900px; width: 90%; }
+.sector-grid-modal { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; margin-top: 1.5rem; max-height: 70vh; overflow-y: auto; padding-right: 0.5rem; }
+.sector-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; }
+.sector-card h4 { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.4rem; }
+.sector-ticker { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.8rem; border-radius: 8px; margin-bottom: 0.4rem; background: rgba(0,0,0,0.1); border: 1px solid transparent; }
+.sector-ticker.winner { border-color: rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.05); }
+.sector-ticker:hover { background: rgba(255,255,255,0.05); cursor: pointer; }
+.ticker-info { display: flex; flex-direction: column; }
+.ticker-sym { font-weight: 700; font-size: 0.9rem; }
+.ticker-price { font-size: 0.65rem; color: var(--text-secondary); }
+.ticker-stats { text-align: right; }
+.ticker-score { font-size: 0.85rem; font-weight: 800; color: var(--accent-blue); }
+.ticker-label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.8; }

@@ -100,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleAnalyze = async (ticker) => {
+        window.handleAnalyze = handleAnalyze;
         if (!ticker) return;
 
         // Show loader
@@ -572,4 +573,47 @@ function updatePositionSizer(tradePlan) {
     } else {
         resultEl.textContent = '-- Shares';
     }
+}
+
+/* --- SECTOR SCOUT LOGIC --- */
+document.getElementById('sectorScoutBtn').addEventListener('click', async () => {
+    const modal = document.getElementById('sectorModal');
+    modal.classList.remove('hidden');
+    const container = document.getElementById('sectorLeaderboard');
+    container.innerHTML = '<div class="loader-container"><div class="spinner"></div><p>Performing competitive sector analysis... This may take a moment.</p></div>';
+    try {
+        const response = await fetch('/api/sector_scout');
+        const data = await response.json();
+        renderSectorLeaderboard(data);
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p class="error-msg">Failed to scout sectors. Consult the logs.</p>';
+    }
+});
+
+document.getElementById('closeSectorModal').addEventListener('click', () => {
+    document.getElementById('sectorModal').classList.add('hidden');
+});
+
+function renderSectorLeaderboard(data) {
+    const container = document.getElementById('sectorLeaderboard');
+    container.innerHTML = '';
+    Object.entries(data).forEach(([sector, stocks]) => {
+        const sectorEl = document.createElement('div');
+        sectorEl.className = 'sector-card glass';
+        let stockHTML = stocks.map((s, idx) => `
+            <div class="sector-ticker ${idx === 0 ? 'winner' : ''}" onclick="window.handleAnalyze('${s.ticker}'); document.getElementById('sectorModal').classList.add('hidden');">
+                <div class="ticker-info">
+                    <span class="ticker-sym">${idx === 0 ? '🏆 ' : ''}${s.ticker}</span>
+                    <span class="ticker-price">$${s.price.toFixed(2)}</span>
+                </div>
+                <div class="ticker-stats">
+                    <div class="ticker-score">${s.score}</div>
+                    <div class="ticker-label">${s.label}</div>
+                </div>
+            </div>
+        `).join('');
+        sectorEl.innerHTML = `<h4><i class="fas fa-layer-group"></i> ${sector}</h4>${stockHTML}`;
+        container.appendChild(sectorEl);
+    });
 }
