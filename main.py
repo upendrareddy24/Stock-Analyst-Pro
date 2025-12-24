@@ -108,19 +108,22 @@ def get_market_intelligence():
 def run_autonomous_scanner():
     """Background thread to proactively find opportunities."""
     # List of high-impact tickers to scan
-    watchlist = ['NVDA', 'TSLA', 'AAPL', 'MSFT', 'AMD', 'MSTR', 'COIN', 'GOOGL', 'AMZN', 'META', 'NFLX', 'PLTR']
+    watchlist = ['NVDA', 'TSLA', 'AAPL', 'MSFT', 'AMD', 'MSTR', 'COIN', 'GOOGL', 'AMZN', 'META', 'PLTR', 'IWM']
+    
+    print("Autonomous Intelligence: Engine initialized, waiting 10s for server boot...")
+    time.sleep(10) # Safety delay for Gunicorn workers
     
     with app.app_context():
-        print("Starting Autonomous Market Intelligence Scanner...")
+        print("Autonomous Market Intelligence Scanner: LIVE")
         while True:
             for ticker in watchlist:
                 try:
-                    # Check if recently updated (don't hammer API)
+                    # Check if recently updated 
                     existing = MarketIntelligence.query.filter_by(ticker=ticker).first()
                     if existing and (time.time() - existing.timestamp.timestamp() < 3600):
-                        continue # Skip if analyzed in last hour
+                        continue
                         
-                    print(f"Autonomous Scanner analyzing {ticker}...")
+                    print(f"AI Scanner: Analyzing {ticker}...")
                     df = orchestrator.get_stock_data(ticker)
                     if df is None or df.empty:
                         continue
@@ -148,23 +151,22 @@ def run_autonomous_scanner():
                         db.session.commit()
                         print(f"AI Detected Advantage: {ticker} (Score: {score})")
                     else:
-                        # Remove if no longer bullish
                         if existing:
                             db.session.delete(existing)
                             db.session.commit()
                             
                 except Exception as e:
+                    if "no such column" in str(e).lower() or "undefined_column" in str(e).lower():
+                        print(f"CRITICAL: Database out of sync! Please run: heroku pg:reset DATABASE_URL --confirm {os.environ.get('HEROKU_APP_NAME')}")
                     print(f"Scanner error on {ticker}: {e}")
                 
-                # Sleep between tickers to respect rate limits
                 time.sleep(30)
-                
-            # Full loop cooling period
             time.sleep(600)
 
-# Start Background Scanner
-scanner_thread = threading.Thread(target=run_autonomous_scanner, daemon=True)
-scanner_thread.start()
+# Start Background Scanner if not in testing/shell
+if os.environ.get('RUN_SCANNER', 'true').lower() == 'true':
+    scanner_thread = threading.Thread(target=run_autonomous_scanner, daemon=True)
+    scanner_thread.start()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
