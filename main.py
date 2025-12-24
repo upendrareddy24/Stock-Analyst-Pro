@@ -28,16 +28,16 @@ engine = AnalystEngine("books_db.json")
 
 # EXPERT TRADER: Sector Watchlist
 SECTOR_MAP = {
-    "Quantum/AI Gems": ["IONQ", "RGTI", "AMD"],
-    "Semi/Chips": ["NVDA", "AVGO", "MU"],
-    "Space Economy": ["RKLB", "LMT", "PLTR"],
-    "Nuclear Renaissance": ["OKLO", "LEU", "SMR"],
-    "Uranium/Energy": ["UUUU", "CCJ", "CEG"],
-    "AI Data Centers": ["APLD", "VRT", "ANET"],
-    "Strategic Metals": ["MP", "FCX", "NEM"],
-    "Healthcare/Bio": ["LLY", "NVO", "VRTX"],
-    "Finance/Growth": ["JPM", "GS", "PYPL"],
-    "SaaS/Software": ["MSFT", "CRM", "SAP"]
+    "Next-Gen Moonshots": ["NNE", "LUNR", "TMC", "QUBT", "PGEN"],
+    "AI Growth/Compute": ["PLTR", "ASTS", "VRT", "SMCI", "ARM"],
+    "Nuclear/Uranium": ["OKLO", "SMR", "LEU", "UUUU", "CCJ"],
+    "Financials (XLF)": ["JPM", "BAC", "MS", "GS", "WFC"],
+    "Healthcare (XLV)": ["LLY", "UNH", "VRTX", "AMGN", "ISRG"],
+    "Utilities (XLU)": ["NEE", "DUK", "CEG", "VST", "SRE"],
+    "Commodities/Metal": ["GLD", "SLV", "GDX", "FCX", "NEM"],
+    "Digital/Crypto": ["IBIT", "MSTR", "COIN", "MARA", "RIOT"],
+    "Semi/Chips": ["NVDA", "AVGO", "MU", "AMD", "TSM"],
+    "Software/SaaS": ["MSFT", "CRM", "SAP", "SNOW", "DDOG"]
 }
 
 @app.route('/')

@@ -263,6 +263,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.options_intel.sentiment.includes('Bullish')) sentPill.classList.add('rating-buy');
                 else if (data.options_intel.sentiment.includes('Bearish')) sentPill.classList.add('rating-sell');
                 else sentPill.classList.add('rating-hold');
+
+                // --- OPTION PICK RENDER ---
+                const pickContainer = document.getElementById('optionPick');
+                if (pickContainer && data.options_intel.recommendation && data.options_intel.recommendation.type !== 'WAIT') {
+                    pickContainer.classList.remove('hidden');
+                    document.getElementById('optType').textContent = data.options_intel.recommendation.type;
+                    document.getElementById('optStrike').textContent = `$${data.options_intel.recommendation.strike}`;
+                    document.getElementById('optReason').textContent = data.options_intel.recommendation.reason;
+
+                    const typePill = document.getElementById('optType');
+                    typePill.className = 'mini-consensus rating-pill';
+                    typePill.classList.add(data.options_intel.recommendation.type === 'CALL' ? 'rating-buy' : 'rating-sell');
+                } else if (pickContainer) {
+                    pickContainer.classList.add('hidden');
+                }
             } else {
                 if (optCard) optCard.style.display = 'none';
             }
