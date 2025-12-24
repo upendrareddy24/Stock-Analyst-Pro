@@ -56,7 +56,8 @@ class AnalystEngine:
             "personas": results,
             "actionable_strategies": actionable_strategies,
             "recent_news": news[:5] if news else [],
-            "options_intel": options_intel
+            "options_intel": options_intel,
+            "patterns": self._detect_chart_patterns(df)
         }
 
     def _generate_priority(self, results: Dict[str, Any], strategies: List[Dict[str, Any]]) -> Dict[str, Any]:

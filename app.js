@@ -281,6 +281,21 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 if (optCard) optCard.style.display = 'none';
             }
+
+            // --- CHART PATTERNS ---
+            const pSection = document.getElementById('patternSection');
+            const pList = document.getElementById('patternList');
+            if (data.patterns && data.patterns.length > 0) {
+                pSection.style.display = 'block';
+                pList.innerHTML = data.patterns.map(p => `
+                    <div class="pattern-item" style="background: rgba(0,0,0,0.2); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                        <h5 style="font-size: 0.7rem; color: #a78bfa; margin: 0;">${p.name} <span class="mini-consensus" style="font-size:0.5rem; background:rgba(255,255,255,0.1);">${p.status}</span></h5>
+                        <p style="font-size: 0.6rem; color: #94a3b8; margin: 0.2rem 0 0 0;">${p.description}</p>
+                    </div>
+                `).join('');
+            } else if (pSection) {
+                pSection.style.display = 'none';
+            }
         }
 
         // --- EXPORT HANDLER ---

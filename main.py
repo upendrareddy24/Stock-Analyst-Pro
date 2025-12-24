@@ -26,6 +26,14 @@ with app.app_context():
 orchestrator = DataOrchestrator()
 engine = AnalystEngine("books_db.json")
 
+# Expanded Universe for Dynamic Discovery
+DYNAMIC_MOONSHOT_UNIVERSE = [
+    "NNE", "LUNR", "TMC", "QUBT", "PGEN", "ASTS", "VRT", "SMCI", "ARM", 
+    "RGTI", "IONQ", "BKSY", "PLTR", "SOUN", "SERV", "MARA", "RIOT", "COIN",
+    "MSTR", "RDDT", "PATH", "CELH", "SMR", "OKLO", "LEU", "UUUU", "CCJ",
+    "GME", "CHPT", "NIO", "XPEV", "LI", "PLUG", "FCEL", "SPCE", "BLNK"
+]
+
 # EXPERT TRADER: Sector Watchlist
 SECTOR_MAP = {
     "Next-Gen Moonshots": ["NNE", "LUNR", "TMC", "QUBT", "PGEN"],
@@ -131,12 +139,13 @@ def sector_scout():
     results = {}
     benchmark_df = orchestrator.get_stock_data("SPY")
     for sector, tickers in SECTOR_MAP.items():
+        current_watchlist = DYNAMIC_MOONSHOT_UNIVERSE if sector == "Next-Gen Moonshots" else tickers
         sector_results = []
-        for ticker in tickers:
+        for ticker in current_watchlist:
             try:
                 df = orchestrator.get_stock_data(ticker)
                 if df is not None and not df.empty:
-                    # Minimal analysis for speed in batch mode
+                    # High-speed analysis for batch mode
                     # Note: We skip news/options here to stay within Heroku's 30s limit
                     analysis = engine.analyze_ticker(ticker, df, benchmark_df=benchmark_df)
                     sector_results.append({
@@ -147,9 +156,9 @@ def sector_scout():
                     })
             except:
                 continue
-        # Sort by score descending
+        # Sort by score descending and take top 5
         sector_results.sort(key=lambda x: x['score'], reverse=True)
-        results[sector] = sector_results
+        results[sector] = sector_results[:5]
     return jsonify(results)
 
 # --- AUTONOMOUS SCANNER ENGINE ---
