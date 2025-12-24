@@ -43,9 +43,12 @@ class AnalystEngine:
             "trade_plan": self._generate_trade_plan(df, results, actionable_strategies),
             "technical_indicators": {
                 "squeeze": self._calculate_squeeze(df),
-                "rsi": round(self._calculate_rsi(df), 1),
+                "rsi": self._calculate_rsi(df),
                 "macd": self._calculate_macd(df),
-                "rel_volume": round(df['Volume'].iloc[-1] / df['Volume'].tail(20).mean(), 2)
+                "rel_volume": {
+                    "value": round(df['Volume'].iloc[-1] / df['Volume'].tail(20).mean(), 2),
+                    "history": [round(v, 2) for v in (df['Volume'] / df['Volume'].rolling(20).mean()).tail(20).tolist()]
+                }
             },
             "personas": results,
             "actionable_strategies": actionable_strategies,
@@ -136,8 +139,8 @@ class AnalystEngine:
             })
 
         # 4. Long Term Value (Contrarian)
-        rsi = self._calculate_rsi(df)
-        if rsi < 35 and current_price < df['Close'].rolling(200).mean().iloc[-1]:
+        rsi_val = self._calculate_rsi(df)['value'] # Access the value from the dict
+        if rsi_val < 35 and current_price < df['Close'].rolling(200).mean().iloc[-1]:
             strategies.append({
                 "type": "Long Term Value / Reversal",
                 "description": "Oversold conditions in a beaten-down stock. Classic value play.",
@@ -146,14 +149,18 @@ class AnalystEngine:
 
         return strategies
 
-    def _calculate_rsi(self, df: pd.DataFrame, period: int = 14) -> float:
+    def _calculate_rsi(self, df: pd.DataFrame, period: int = 14) -> Dict[str, Any]:
         delta = df['Close'].diff()
         up = delta.clip(lower=0)
         down = -1 * delta.clip(upper=0)
         ma_up = up.rolling(period).mean()
         ma_down = down.rolling(period).mean()
         rs = ma_up / ma_down
-        return 100 - (100 / (1 + rs)).iloc[-1]
+        rsi_series = 100 - (100 / (1 + rs))
+        return {
+            "value": round(rsi_series.iloc[-1], 1),
+            "history": [round(v, 1) for v in rsi_series.tail(20).tolist()]
+        }
 
     def _calculate_consensus(self, results: Dict[str, Any]) -> str:
         sentiment_scores = {
@@ -318,17 +325,17 @@ class AnalystEngine:
 
     def _analyze_psychology(self, df: pd.DataFrame) -> Dict[str, Any]:
         # Principles: Fear/Greed, Bias, Mastery
-        rsi = self._calculate_rsi(df)
+        rsi_val = self._calculate_rsi(df)['value'] # Access the value from the dict
         
         score = 0
         reasons = []
         
-        if rsi > 70:
+        if rsi_val > 70:
             score -= 2
-            reasons.append(f"Market Greed: RSI is overbought ({rsi:.1f})")
-        elif rsi < 30:
+            reasons.append(f"Market Greed: RSI is overbought ({rsi_val:.1f})")
+        elif rsi_val < 30:
             score += 2
-            reasons.append(f"Market Fear: RSI is oversold ({rsi:.1f})")
+            reasons.append(f"Market Fear: RSI is oversold ({rsi_val:.1f})")
         else:
             reasons.append("Market in Neutral psychological territory")
             
@@ -516,7 +523,7 @@ class AnalystEngine:
         momentum = df['Close'].iloc[-1] - sma20.iloc[-1]
         
         if is_squeezing:
-            return {"status": "Squeeze ON", "color": "orange", "detail": "Volatility Compression"}
+            return {"status": "Squeeze ON", "color": "orange", "detail": "Volatility Compression", "history": [round(v, 2) for v in (df['Close'] - sma20).tail(20).tolist()]}
         else:
             # Check previous candle to see if it JUST fired
             prev_upper_bb = upper_bb.iloc[-2]
@@ -524,9 +531,9 @@ class AnalystEngine:
             was_squeezing = (prev_upper_bb < prev_upper_kc)
             
             if was_squeezing:
-                return {"status": "Fired!", "color": "green" if momentum > 0 else "red", "detail": "Explosive Move Started"}
+                return {"status": "Fired!", "color": "green" if momentum > 0 else "red", "detail": "Explosive Move Started", "history": [round(v, 2) for v in (df['Close'] - sma20).tail(20).tolist()]}
             
-            return {"status": "Squeeze Off", "color": "gray", "detail": "Normal Volatility"}
+            return {"status": "Squeeze Off", "color": "gray", "detail": "Normal Volatility", "history": [round(v, 2) for v in (df['Close'] - sma20).tail(20).tolist()]}
 
     def _calculate_macd(self, df: pd.DataFrame) -> Dict[str, Any]:
         # EMA 12, 26
@@ -545,7 +552,8 @@ class AnalystEngine:
         return {
             "value": round(curr_hist, 2),
             "status": status,
-            "trend": trend
+            "trend": trend,
+            "history": [round(v, 2) for v in histogram.tail(20).tolist()]
         }
 
 if __name__ == "__main__":

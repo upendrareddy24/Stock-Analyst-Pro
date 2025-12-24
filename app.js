@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModal = document.getElementById('closeModal');
     const historyList = document.getElementById('historyList');
     const bullishList = document.getElementById('bullishList');
+    const exportReportBtn = document.getElementById('exportReportBtn');
+    const autocompleteResults = document.getElementById('autocompleteResults');
+    const intelligenceList = document.getElementById('intelligenceList');
 
     let analysisHistory = [];
     let bullishRadar = [];
@@ -47,7 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
             div.innerHTML = `
                 <div class="history-item-header">
                     <h4>${item.ticker}</h4>
-                    <span class="mini-consensus rating-pill rating-buy">${item.consensus.split(' ')[0]}</span>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                        <span class="mini-consensus rating-pill rating-buy">${item.consensus.split(' ')[0]}</span>
+                        <span style="font-size:0.65rem; color:var(--accent-blue); font-weight:700;">${item.master_score || 0} pts</span>
+                    </div>
                 </div>
                 <div class="date">${item.date}</div>
             `;
@@ -193,20 +199,29 @@ document.addEventListener('DOMContentLoaded', () => {
             sqEl.textContent = tech.squeeze.status;
             sqDet.textContent = tech.squeeze.detail;
             sqEl.style.color = tech.squeeze.color === 'orange' ? '#fbbf24' : tech.squeeze.color === 'green' ? '#34d399' : tech.squeeze.color === 'red' ? '#f87171' : '#9ca3af';
+            renderSparkline('sparklineSqueeze', tech.squeeze.history, tech.squeeze.color === 'orange' ? '#fbbf24' : '#34d399');
 
             // RSI
-            document.getElementById('vitalRSI').textContent = tech.rsi;
+            document.getElementById('vitalRSI').textContent = tech.rsi.value;
             const rsiBar = document.getElementById('vitalRSIBar');
-            rsiBar.style.width = `${tech.rsi}%`;
-            rsiBar.style.backgroundColor = tech.rsi > 70 ? '#f87171' : tech.rsi < 30 ? '#34d399' : '#fbbf24';
+            rsiBar.style.width = `${tech.rsi.value}%`;
+            rsiBar.style.backgroundColor = tech.rsi.value > 70 ? '#f87171' : tech.rsi.value < 30 ? '#34d399' : '#fbbf24';
+            renderSparkline('sparklineRSI', tech.rsi.history, tech.rsi.value > 70 ? '#f87171' : tech.rsi.value < 30 ? '#34d399' : '#3b82f6');
 
             // Volume
-            document.getElementById('vitalVol').textContent = tech.rel_volume + 'x';
-            document.getElementById('vitalVolDetail').style.color = tech.rel_volume > 1.2 ? '#34d399' : '#9ca3af';
+            document.getElementById('vitalVol').textContent = tech.rel_volume.value + 'x';
+            document.getElementById('vitalVolDetail').style.color = tech.rel_volume.value > 1.2 ? '#34d399' : '#9ca3af';
+            renderSparkline('sparklineVol', tech.rel_volume.history, '#3b82f6');
 
             // MACD
             document.getElementById('vitalMACD').textContent = tech.macd.status;
             document.getElementById('vitalMACDDetail').textContent = tech.macd.trend;
+            renderSparkline('sparklineMACD', tech.macd.history, '#8b5cf6');
+        }
+
+        // --- EXPORT HANDLER ---
+        if (exportReportBtn) {
+            exportReportBtn.onclick = () => exportResearchReport(data);
         }
 
         // Render Strategies
@@ -324,113 +339,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const STRATEGY_TRACKER_URL = 'https://strategystocktracker-6a0b0ef8a437.herokuapp.com';
-    const syncStrategyBtn = document.getElementById('syncStrategyBtn');
-    const strategyFeedList = document.getElementById('strategyFeedList');
+    const intelligenceFeedList = document.getElementById('intelligenceList');
 
-    const fetchStrategyTickers = async () => {
-        syncStrategyBtn.classList.add('loading');
+    const fetchIntelligence = async () => {
         try {
-            const resp = await fetch(`${STRATEGY_TRACKER_URL}/api/stocks`);
-            const stocks = await resp.json();
-            renderStrategyFeed(stocks);
+            const resp = await fetch('/api/market_intelligence');
+            const data = await resp.json();
+            renderIntelligence(data);
         } catch (err) {
-            console.error("Failed to sync strategies:", err);
-            strategyFeedList.innerHTML = '<p class="text-danger" style="font-size:0.7rem;">Sync failed. Ensure Tracker is live.</p>';
-        } finally {
-            syncStrategyBtn.classList.remove('loading');
+            console.error("Failed to fetch market intelligence:", err);
+            intelligenceFeedList.innerHTML = '<p class="text-secondary" style="font-size:0.7rem;">Feed temporarily unavailable.</p>';
         }
     };
 
-    const renderStrategyFeed = (stocks) => {
-        if (!stocks || stocks.length === 0) {
-            strategyFeedList.innerHTML = '<p class="empty-msg">No tickers found in Tracker.</p>';
+    const renderIntelligence = (leads) => {
+        if (!leads || leads.length === 0) {
+            intelligenceFeedList.innerHTML = '<p class="empty-msg">Scanning for market leaders...</p>';
             return;
         }
 
-        // Group by strategy
-        const groups = stocks.reduce((acc, stock) => {
-            const strat = stock.strategy || 'Uncategorized';
-            if (!acc[strat]) acc[strat] = [];
-            acc[strat].push(stock.ticker);
-            return acc;
-        }, {});
+        intelligenceFeedList.innerHTML = '';
+        leads.forEach(lead => {
+            const div = document.createElement('div');
+            div.className = 'history-item glass intelligence-item';
 
-        strategyFeedList.innerHTML = '';
-        Object.entries(groups).forEach(([strategy, tickers]) => {
-            const groupDiv = document.createElement('div');
-            groupDiv.className = 'strategy-group';
-
-            groupDiv.innerHTML = `
-                <div class="strategy-title">
-                    <span>${strategy}</span>
-                    <button class="auto-consult-btn" data-strategy="${strategy}">Auto-Consult</button>
+            div.innerHTML = `
+                <div class="history-item-header">
+                    <h4>${lead.ticker}</h4>
+                    <span class="mini-consensus rating-pill rating-buy">${lead.master_score} pts</span>
                 </div>
-                <div class="strategy-tickers" id="strat-${strategy.replace(/\s+/g, '-')}">
-                    ${tickers.map(t => `<div class="strat-ticker-pill" data-ticker="${t}">${t}</div>`).join('')}
+                <div class="intelligence-meta">
+                    <span class="target">Target: ${lead.potential_gain}</span>
+                    <span class="time">${lead.date.split(' ')[1]} ${lead.date.split(' ')[2]}</span>
                 </div>
             `;
 
-            // Ticker pill click
-            groupDiv.querySelectorAll('.strat-ticker-pill').forEach(pill => {
-                pill.addEventListener('click', () => {
-                    tickerInput.value = pill.getAttribute('data-ticker');
-                    handleAnalyze(tickerInput.value);
-                });
+            div.addEventListener('click', () => {
+                tickerInput.value = lead.ticker;
+                handleAnalyze(lead.ticker);
             });
 
-            // Auto-Consult button logic
-            groupDiv.querySelector('.auto-consult-btn').addEventListener('click', (e) => {
-                autoConsultStrategy(strategy, tickers, e.target);
-            });
-
-            strategyFeedList.appendChild(groupDiv);
+            intelligenceFeedList.appendChild(div);
         });
     };
 
-    const autoConsultStrategy = async (strategyName, tickers, btn) => {
-        const originalText = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'Running...';
-
-        const containerId = `strat-${strategyName.replace(/\s+/g, '-')}`;
-        const container = document.getElementById(containerId);
-
-        for (const ticker of tickers) {
-            const pill = container.querySelector(`[data-ticker="${ticker}"]`);
-            pill.classList.add('loading');
-            pill.style.opacity = '1';
-
-            try {
-                // We reuse the existing handleAnalyze logic but silently
-                const resp = await fetch(`/api/analyze?ticker=${ticker}`);
-                const data = await resp.json();
-
-                if (data.consensus && data.consensus.includes('Bullish')) {
-                    pill.classList.add('analyzed');
-                    pill.innerHTML = `${ticker} <i class="fas fa-check"></i>`;
-                } else {
-                    pill.style.opacity = '0.4';
-                }
-                // Update shared history/radar
-                fetchSharedContent();
-            } catch (err) {
-                pill.classList.add('failed');
-            } finally {
-                pill.classList.remove('loading');
-            }
-            // Small delay to avoid hammering the local server too fast
-            await new Promise(r => setTimeout(r, 500));
-        }
-
-        btn.textContent = 'Complete';
-        setTimeout(() => {
-            btn.textContent = originalText;
-            btn.disabled = false;
-        }, 2000);
-    };
-
+    // Modals and Search logic
     closeModal.addEventListener('click', () => modalOverlay.classList.add('hidden'));
+
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) modalOverlay.classList.add('hidden');
     });
@@ -440,8 +395,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') handleAnalyze(tickerInput.value);
     });
 
-    syncStrategyBtn.addEventListener('click', fetchStrategyTickers);
-
     demoButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             tickerInput.value = btn.textContent;
@@ -449,7 +402,110 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- SPARKLINE HELPER ---
+    const renderSparkline = (canvasId, dataPoints, color) => {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+        if (!dataPoints || dataPoints.length < 2) return;
+
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+
+        const min = Math.min(...dataPoints);
+        const max = Math.max(...dataPoints);
+        const range = max - min || 1;
+
+        dataPoints.forEach((val, i) => {
+            const x = (i / (dataPoints.length - 1)) * w;
+            const y = h - ((val - min) / range) * h;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+
+        ctx.stroke();
+    };
+
+    // --- REPORT EXPORT ---
+    const exportResearchReport = (data) => {
+        const timestamp = new Date().toLocaleString();
+        let report = `# ANALYST MASTERMIND REPORT: ${data.ticker}\n`;
+        report += `Generated: ${timestamp}\n`;
+        report += `Price: $${data.current_price}\n\n`;
+        report += `## CONSENSUS VERDICT: ${data.consensus}\n`;
+        report += `Priority Action: ${data.priority.action}\n`;
+        report += `${data.priority.reasoning}\n\n`;
+
+        report += `## TRADE PLAN\n`;
+        report += `- Entry Zone: ${data.trade_plan.entry_zone}\n`;
+        report += `- Target: ${data.trade_plan.target}\n`;
+        report += `- Stop Loss: ${data.trade_plan.stop_loss}\n\n`;
+
+        report += `## THE ANALYST COUNCIL\n`;
+        Object.entries(data.personas).forEach(([persona, res]) => {
+            report += `### ${persona}: ${res.rating}\n`;
+            res.reasons.forEach(r => report += `- ${r}\n`);
+            report += `\n`;
+        });
+
+        const blob = new Blob([report], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${data.ticker}_Mastermind_Report.md`;
+        a.click();
+    };
+
+    // --- AUTOCOMPLETE LOGIC ---
+    let debounceTimer;
+    const tickerList = ['AAPL', 'MSFT', 'NVDA', 'TSLA', 'AMD', 'AMD', 'META', 'GOOGL', 'AMZN', 'NFLX', 'BRK.B', 'V', 'PYPL', 'DIS', 'BA', 'MSTR', 'COIN', 'PLTR', 'SNOW'];
+
+    tickerInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        const query = tickerInput.value.trim().toUpperCase();
+        if (query.length < 1) {
+            autocompleteResults.classList.add('hidden');
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            const matches = tickerList.filter(t => t.startsWith(query)).slice(0, 5);
+            if (matches.length > 0) {
+                autocompleteResults.innerHTML = matches.map(m => `
+                    <div class="autocomplete-item" data-ticker="${m}">
+                        <span class="symbol">${m}</span>
+                        <span class="name">Stock Ticker</span>
+                    </div>
+                `).join('');
+                autocompleteResults.classList.remove('hidden');
+
+                autocompleteResults.querySelectorAll('.autocomplete-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        tickerInput.value = item.getAttribute('data-ticker');
+                        autocompleteResults.classList.add('hidden');
+                        handleAnalyze(tickerInput.value);
+                    });
+                });
+            } else {
+                autocompleteResults.classList.add('hidden');
+            }
+        }, 200);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!tickerInput.contains(e.target) && !autocompleteResults.contains(e.target)) {
+            autocompleteResults.classList.add('hidden');
+        }
+    });
+
     // Initial Render
     fetchSharedContent();
-    fetchStrategyTickers(); // Auto-sync on load
+    fetchIntelligence();
+    setInterval(fetchIntelligence, 30000); // Polling intelligence every 30s
 });
