@@ -280,15 +280,24 @@ class DataOrchestrator:
             total_put_vol = int(puts['volume'].sum())
             avg_iv = round(float(calls['impliedVolatility'].mean() * 100), 1)
             
-            # Most active strike (by Open Interest)
+            # Absolute highest Open Interest strike across both sides
             max_oi_call = calls.loc[calls['openInterest'].idxmax()]
+            max_oi_put = puts.loc[puts['openInterest'].idxmax()]
+            
+            if max_oi_call['openInterest'] >= max_oi_put['openInterest']:
+                top_strike = float(max_oi_call['strike'])
+                top_type = "Call Wall"
+            else:
+                top_strike = float(max_oi_put['strike'])
+                top_type = "Put Wall"
             
             return {
                 "has_options": True,
                 "expiration": expirations[0],
                 "put_call_ratio": round(total_put_vol / total_call_vol if total_call_vol > 0 else 0, 2),
                 "avg_iv": avg_iv,
-                "max_oi_strike": float(max_oi_call['strike']),
+                "max_oi_strike": top_strike,
+                "strike_label": top_type,
                 "total_volume": int(total_call_vol + total_put_vol)
             }
         except Exception as e:
