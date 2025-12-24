@@ -648,6 +648,46 @@ class AnalystEngine:
         
         return {"daily": daily, "weekly": weekly, "monthly": monthly}
 
+    def _detect_chart_patterns(self, df: pd.DataFrame) -> List[Dict[str, str]]:
+        """Detects classic chart patterns like Double Bottom, Cup & Handle, etc."""
+        patterns = []
+        if len(df) < 100: return []
+        
+        sub_df = df.tail(60)
+        min1 = sub_df['Low'].iloc[0:20].min()
+        min2 = sub_df['Low'].iloc[-20:].min()
+        current = df['Close'].iloc[-1]
+        
+        # Double Bottom
+        if abs(min1 - min2) / min1 < 0.03 and current > min2 * 1.05:
+            patterns.append({
+                "name": "Double Bottom",
+                "status": "Bullish",
+                "description": "Verified support at major level. Momentum is shifting up."
+            })
+
+        # Double Top
+        max1 = sub_df['High'].iloc[0:20].max()
+        max2 = sub_df['High'].iloc[-20:].max()
+        if abs(max1 - max2) / max1 < 0.03 and current < max2 * 0.95:
+             patterns.append({
+                "name": "Double Top",
+                "status": "Bearish",
+                "description": "Rejected twice at major resistance. High supply zone."
+            })
+
+        # Cup and Handle
+        lowest_60 = sub_df['Low'].min()
+        start_60 = df['Close'].iloc[-60]
+        if lowest_60 < start_60 * 0.85 and current > lowest_60 * 1.15 and current < start_60:
+            patterns.append({
+                "name": "Cup and Handle",
+                "status": "Breakout Potential",
+                "description": "Deep accumulation bowl detected. Consolidation handle forming."
+            })
+
+        return patterns
+
 if __name__ == "__main__":
     import sys
     sys.path.append('.')
