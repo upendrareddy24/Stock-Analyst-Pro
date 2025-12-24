@@ -592,8 +592,20 @@ class AnalystEngine:
             "avg_iv": iv,
             "conviction_boost": conviction_boost,
             "max_oi_strike": options.get('max_oi_strike'),
-            "expiration": options.get('expiration')
+            "expiration": options.get('expiration'),
+            "recommendation": self._generate_option_rec(options)
         }
+
+    def _generate_option_rec(self, options: Dict[str, Any]) -> Dict[str, Any]:
+        """Generates a specific strike and type suggestion."""
+        pc = options.get('put_call_ratio', 0)
+        strike = options.get('max_oi_strike', 0)
+        expr = options.get('expiration', '--')
+        if pc < 0.65 and pc > 0:
+            return {"type": "CALL", "strike": strike, "expiry": expr, "reason": "Bullish institutional wall detected."}
+        elif pc > 1.25:
+            return {"type": "PUT", "strike": strike, "expiry": expr, "reason": "Institutional hedging/bearish flow."}
+        return {"type": "WAIT", "strike": "--", "expiry": "--", "reason": "Option flow is mixed."}
 
     def _calculate_relative_strength(self, df: pd.DataFrame, benchmark_df: pd.DataFrame) -> Dict[str, Any]:
         """Calculates 3-month performance vs SPY."""

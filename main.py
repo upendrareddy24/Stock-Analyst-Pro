@@ -28,16 +28,16 @@ engine = AnalystEngine("books_db.json")
 
 # EXPERT TRADER: Sector Watchlist
 SECTOR_MAP = {
-    "Quantum Computing": ["IONQ", "RGTI", "IBM"],
-    "Semi/Chips": ["NVDA", "AMD", "AVGO"],
-    "Energy": ["XOM", "CVX", "SLB"],
-    "Metals/Mining": ["FCX", "NEM", "AA"],
-    "Healthcare/Bio": ["LLY", "UNH", "NVO"],
-    "Finance/Banks": ["JPM", "GS", "MS"],
-    "Data Centers/AI Infra": ["VRT", "ANET", "EQIX"],
-    "Nuclear/SMR": ["SMR", "OKLO", "CEG"],
-    "Aerospace/Defense": ["LMT", "RTX", "NOC"],
-    "Software/SaaS": ["MSFT", "PLTR", "CRM"]
+    "Quantum/AI Gems": ["IONQ", "RGTI", "AMD"],
+    "Semi/Chips": ["NVDA", "AVGO", "MU"],
+    "Space Economy": ["RKLB", "LMT", "PLTR"],
+    "Nuclear Renaissance": ["OKLO", "LEU", "SMR"],
+    "Uranium/Energy": ["UUUU", "CCJ", "CEG"],
+    "AI Data Centers": ["APLD", "VRT", "ANET"],
+    "Strategic Metals": ["MP", "FCX", "NEM"],
+    "Healthcare/Bio": ["LLY", "NVO", "VRTX"],
+    "Finance/Growth": ["JPM", "GS", "PYPL"],
+    "SaaS/Software": ["MSFT", "CRM", "SAP"]
 }
 
 @app.route('/')
