@@ -217,6 +217,24 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('vitalMACD').textContent = tech.macd.status;
             document.getElementById('vitalMACDDetail').textContent = tech.macd.trend;
             renderSparkline('sparklineMACD', tech.macd.history, '#8b5cf6');
+
+            // Options Intel
+            const optCard = document.getElementById('optionsIntelCard');
+            if (data.options_intel && data.options_intel.has_options) {
+                optCard.style.display = 'block';
+                document.getElementById('optionsSentiment').textContent = data.options_intel.sentiment;
+                document.getElementById('optionsStrike').textContent = `$${data.options_intel.max_oi_strike}`;
+                document.getElementById('pcRatio').textContent = data.options_intel.pc_ratio;
+                document.getElementById('avgIV').textContent = data.options_intel.avg_iv;
+
+                const sentPill = document.getElementById('optionsSentiment');
+                sentPill.className = 'mini-consensus rating-pill';
+                if (data.options_intel.sentiment.includes('Bullish')) sentPill.classList.add('rating-buy');
+                else if (data.options_intel.sentiment.includes('Bearish')) sentPill.classList.add('rating-sell');
+                else sentPill.classList.add('rating-hold');
+            } else {
+                if (optCard) optCard.style.display = 'none';
+            }
         }
 
         // --- EXPORT HANDLER ---

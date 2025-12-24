@@ -39,7 +39,8 @@ def analyze():
             return jsonify({"error": f"Could not fetch data for {ticker}"}), 400
             
         news = orchestrator.get_ticker_news(ticker)
-        analysis = engine.analyze_ticker(ticker, df, news)
+        options = orchestrator.get_options_intel(ticker)
+        analysis = engine.analyze_ticker(ticker, df, news, options)
         
         # --- SHARED PERSISTENCE ---
         # 1. Update Global History
@@ -129,7 +130,8 @@ def run_autonomous_scanner():
                         continue
                         
                     news = orchestrator.get_ticker_news(ticker)
-                    analysis = engine.analyze_ticker(ticker, df, news)
+                    options = orchestrator.get_options_intel(ticker)
+                    analysis = engine.analyze_ticker(ticker, df, news, options)
                     
                     if "Bullish" in analysis['consensus'] or "Strong" in analysis['consensus']:
                         score = analysis.get('master_score', {}).get('value', 0)

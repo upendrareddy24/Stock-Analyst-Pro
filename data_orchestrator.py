@@ -258,6 +258,43 @@ class DataOrchestrator:
                 json.dump(news, f)
         return news
 
+    def get_options_intel(self, ticker: str) -> Dict[str, Any]:
+        """
+        Fetches high-level option chain metrics for institutional sentiment analysis.
+        """
+        print(f"Fetching Options Intelligence for {ticker}...")
+        try:
+            import yfinance as yf
+            ticker_obj = yf.Ticker(ticker)
+            
+            expirations = ticker_obj.options
+            if not expirations:
+                return {"has_options": False}
+                
+            # Get the first available expiration (near-term sentiment)
+            opt_chain = ticker_obj.option_chain(expirations[0])
+            calls = opt_chain.calls
+            puts = opt_chain.puts
+            
+            total_call_vol = int(calls['volume'].sum())
+            total_put_vol = int(puts['volume'].sum())
+            avg_iv = round(float(calls['impliedVolatility'].mean() * 100), 1)
+            
+            # Most active strike (by Open Interest)
+            max_oi_call = calls.loc[calls['openInterest'].idxmax()]
+            
+            return {
+                "has_options": True,
+                "expiration": expirations[0],
+                "put_call_ratio": round(total_put_vol / total_call_vol if total_call_vol > 0 else 0, 2),
+                "avg_iv": avg_iv,
+                "max_oi_strike": float(max_oi_call['strike']),
+                "total_volume": int(total_call_vol + total_put_vol)
+            }
+        except Exception as e:
+            print(f"Options Intel failed for {ticker}: {e}")
+            return {"has_options": False}
+
 if __name__ == "__main__":
     orchestrator = DataOrchestrator()
     sample_data = orchestrator.get_stock_data("AAPL")

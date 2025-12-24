@@ -18,9 +18,9 @@ class AnalystEngine:
             "News Watch": self._analyze_news
         }
 
-    def analyze_ticker(self, ticker: str, df: pd.DataFrame, news: List[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def analyze_ticker(self, ticker: str, df: pd.DataFrame, news: List[Dict[str, Any]] = None, options: Dict[str, Any] = None) -> Dict[str, Any]:
         """
-        Runs the full council analysis on a ticker, including news if provided.
+        Runs the full council analysis on a ticker, including news and options if provided.
         """
         if df.empty or len(df) < 50:
             return {"error": "Insufficient data"}
@@ -33,13 +33,14 @@ class AnalystEngine:
                 results[persona] = func(df)
 
         actionable_strategies = self._detect_specific_strategies(df, news)
+        options_intel = self._analyze_options(options) if options else {"has_options": False}
         
         return {
             "ticker": ticker,
             "current_price": round(df['Close'].iloc[-1], 2),
             "consensus": self._calculate_consensus(results),
             "priority": self._generate_priority(results, actionable_strategies),
-            "master_score": self._calculate_master_score(results, actionable_strategies),
+            "master_score": self._calculate_master_score(results, actionable_strategies, options_intel),
             "trade_plan": self._generate_trade_plan(df, results, actionable_strategies),
             "technical_indicators": {
                 "squeeze": self._calculate_squeeze(df),
@@ -52,7 +53,8 @@ class AnalystEngine:
             },
             "personas": results,
             "actionable_strategies": actionable_strategies,
-            "recent_news": news[:5] if news else []
+            "recent_news": news[:5] if news else [],
+            "options_intel": options_intel
         }
 
     def _generate_priority(self, results: Dict[str, Any], strategies: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -424,9 +426,9 @@ class AnalystEngine:
             "books": [b['title'] for b in self.books if b['persona'] == "Macro Strategist"]
         }
 
-    def _calculate_master_score(self, results: Dict[str, Any], strategies: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _calculate_master_score(self, results: Dict[str, Any], strategies: List[Dict[str, Any]], options: Dict[str, Any] = None) -> Dict[str, Any]:
         """
-        Calculates a 0-100 Master Score based on diverse inputs.
+        Calculates a 0-100 Master Score based on diverse inputs, including options.
         """
         base_score = 50 # Neutral Start
         
@@ -444,6 +446,10 @@ class AnalystEngine:
         if "Strong Bullish" in consensus: base_score += 10
         if "Bearish" in consensus: base_score -= 10
         
+        # 4. Options Conviction Boost
+        if options and options.get('has_options'):
+            base_score += options.get('conviction_boost', 0)
+        
         # Clamp Score
         final_score = max(0, min(99, base_score))
         
@@ -460,7 +466,8 @@ class AnalystEngine:
         Generates simulated Entry, Target, and Stop Loss levels.
         """
         current_price = df['Close'].iloc[-1]
-        score_data = self._calculate_master_score(results, strategies)
+        # We don't necessarily need options for the trade plan levels, but we'll pass None for consistency
+        score_data = self._calculate_master_score(results, strategies, None)
         
         if score_data['value'] < 60:
             return None # No trade recommended
@@ -554,6 +561,36 @@ class AnalystEngine:
             "status": status,
             "trend": trend,
             "history": [round(v, 2) for v in histogram.tail(20).tolist()]
+        }
+
+    def _analyze_options(self, options: Dict[str, Any]) -> Dict[str, Any]:
+        """Processes raw option data into actionable sentiment insights."""
+        if not options or not options.get('has_options'):
+            return {"has_options": False}
+
+        pc_ratio = options.get('put_call_ratio', 0)
+        iv = options.get('avg_iv', 0)
+        
+        sentiment = "Neutral"
+        conviction_boost = 0
+        
+        if pc_ratio < 0.6 and pc_ratio > 0:
+            sentiment = "Highly Bullish"
+            conviction_boost = 5 # +5 to master score
+        elif pc_ratio > 1.2:
+            sentiment = "Bearish (Hedging)"
+            conviction_boost = -3
+        elif iv > 80:
+            sentiment = "Speculative (High Volatility)"
+            
+        return {
+            "has_options": True,
+            "sentiment": sentiment,
+            "pc_ratio": pc_ratio,
+            "avg_iv": iv,
+            "conviction_boost": conviction_boost,
+            "max_oi_strike": options.get('max_oi_strike'),
+            "expiration": options.get('expiration')
         }
 
 if __name__ == "__main__":
