@@ -1243,3 +1243,13 @@ h3 i {
     border-color: var(--accent-blue);
     transform: translateX(4px);
 }
+/* --- EXPERT TRADER --- */
+.trend-alignment-row { display: flex; gap: 0.8rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; }
+.trend-tag { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
+.bullish { color: #10b981; }
+.bearish { color: #ef4444; }
+.leader-tag { background: rgba(251,191,36,0.1); border-color: #fbbf24; color: #fbbf24; margin-left: auto; }
+.position-sizer { margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; }
+.sizer-inputs { display: flex; gap: 0.5rem; }
+.sizer-inputs input { width: 70px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 4px; padding: 2px 5px; font-size: 0.7rem; }
+.sizer-result { font-size: 0.7rem; margin-top: 0.5rem; color: #94a3b8; }

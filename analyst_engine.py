@@ -18,9 +18,9 @@ class AnalystEngine:
             "News Watch": self._analyze_news
         }
 
-    def analyze_ticker(self, ticker: str, df: pd.DataFrame, news: List[Dict[str, Any]] = None, options: Dict[str, Any] = None) -> Dict[str, Any]:
+    def analyze_ticker(self, ticker: str, df: pd.DataFrame, news: List[Dict[str, Any]] = None, options: Dict[str, Any] = None, benchmark_df: pd.DataFrame = None) -> Dict[str, Any]:
         """
-        Runs the full council analysis on a ticker, including news and options if provided.
+        Runs the full council analysis on a ticker, including news, options, and benchmark.
         """
         if df.empty or len(df) < 50:
             return {"error": "Insufficient data"}
@@ -49,7 +49,9 @@ class AnalystEngine:
                 "rel_volume": {
                     "value": round(df['Volume'].iloc[-1] / df['Volume'].tail(20).mean(), 2),
                     "history": [round(v, 2) for v in (df['Volume'] / df['Volume'].rolling(20).mean()).tail(20).tolist()]
-                }
+                },
+                "relative_strength": self._calculate_relative_strength(df, benchmark_df),
+                "mtf_alignment": self._calculate_mtf_alignment(df)
             },
             "personas": results,
             "actionable_strategies": actionable_strategies,
@@ -592,6 +594,46 @@ class AnalystEngine:
             "max_oi_strike": options.get('max_oi_strike'),
             "expiration": options.get('expiration')
         }
+
+    def _calculate_relative_strength(self, df: pd.DataFrame, benchmark_df: pd.DataFrame) -> Dict[str, Any]:
+        """Calculates 3-month performance vs SPY."""
+        if benchmark_df is None or benchmark_df.empty:
+            return {"status": "Neutral", "value": 0}
+        
+        # Align dates
+        combined = pd.concat([df['Close'], benchmark_df['Close']], axis=1).dropna()
+        combined.columns = ['Ticker', 'Benchmark']
+        
+        if len(combined) < 63: # 3 months of trading days
+            return {"status": "Neutral", "value": 0}
+            
+        ticker_perf = (combined['Ticker'].iloc[-1] / combined['Ticker'].iloc[-63]) - 1
+        bench_perf = (combined['Benchmark'].iloc[-1] / combined['Benchmark'].iloc[-63]) - 1
+        
+        rs_value = round((ticker_perf - bench_perf) * 100, 1)
+        status = "Leader" if rs_value > 5 else "Laggard" if rs_value < -5 else "Neutral"
+        
+        return {"status": status, "value": rs_value}
+
+    def _calculate_mtf_alignment(self, df: pd.DataFrame) -> Dict[str, str]:
+        """Detects if Daily, Weekly, and Monthly charts are in sync."""
+        if len(df) < 250: return {"daily": "--", "weekly": "--", "monthly": "--"}
+        
+        # Daily
+        sma50_d = df['Close'].rolling(50).mean()
+        daily = "Bullish" if df['Close'].iloc[-1] > sma50_d.iloc[-1] else "Bearish"
+        
+        # Weekly (Resample)
+        weekly_df = df['Close'].resample('W').last()
+        sma10_w = weekly_df.rolling(10).mean() # ~50 days
+        weekly = "Bullish" if weekly_df.iloc[-1] > sma10_w.iloc[-1] else "Bearish"
+        
+        # Monthly
+        monthly_df = df['Close'].resample('M').last()
+        sma10_m = monthly_df.rolling(10).mean() # ~10 months
+        monthly = "Bullish" if monthly_df.iloc[-1] > sma10_m.iloc[-1] else "Bearish"
+        
+        return {"daily": daily, "weekly": weekly, "monthly": monthly}
 
 if __name__ == "__main__":
     import sys

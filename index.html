@@ -73,159 +73,172 @@
                     </div>
                     <div class="priority-details">
                         <p id="priorityReasoning">...</p>
-                        <div class="metrics-row">
-                            <div class="confidence-meter">
-                                <span>Confidence: <strong id="priorityConfidence">...</strong></span>
-                            </div>
-                            <div id="masterScoreContainer" class="master-score-badge hidden">
-                                <span class="score-value" id="masterScoreValue">--</span>
-                                <span class="score-label" id="masterScoreLabel">Neutral</span>
-                            </div>
-                        </div>
                     </div>
+        </div>
 
-                    <div id="tradePlanCard" class="trade-plan-card hidden">
-                        <div class="trade-header">
-                            <i class="fas fa-chess-board"></i> Trade Plan
-                        </div>
-                        <div class="trade-grid">
-                            <div class="trade-level">
-                                <span>Entry Zone</span>
-                                <strong id="tpEntry">--</strong>
-                            </div>
-                            <div class="trade-level">
-                                <span>Target</span>
-                                <strong id="tpTarget" class="text-success">--</strong>
-                            </div>
-                            <div class="trade-level">
-                                <span>Stop Loss</span>
-                                <strong id="tpStop" class="text-danger">--</strong>
-                            </div>
-                        </div>
-                </section>
+        <div class="trend-alignment-row">
+            <div class="trend-tag" id="tagMonthly">M: <span class="trend-val">--</span></div>
+            <div class="trend-tag" id="tagWeekly">W: <span class="trend-val">--</span></div>
+            <div class="trend-tag" id="tagDaily">D: <span class="trend-val">--</span></div>
+            <div class="trend-tag leader-tag hidden" id="rsLeaderTag"><i class="fas fa-crown"></i> Market Leader</div>
+        </div>
 
-                <!-- Technical Vital Signs -->
-                <section class="vital-signs-section glass" style="margin-top: 1.5rem; padding: 1rem;">
-                    <div class="section-header" style="margin-bottom: 1rem;">
-                        <h3><i class="fas fa-heartbeat"></i> Technical Vital Signs</h3>
-                    </div>
-                    <div class="vital-grid">
-                        <div class="vital-card">
-                            <div class="vital-header-row">
-                                <span class="vital-label">Volatility Squeeze</span>
-                                <canvas id="sparklineSqueeze" class="sparkline"></canvas>
-                            </div>
-                            <div class="vital-value" id="vitalSqueeze">--</div>
-                            <small id="vitalSqueezeDetail" class="text-secondary">--</small>
-                        </div>
-                        <div class="vital-card">
-                            <div class="vital-header-row">
-                                <span class="vital-label">RSI (14)</span>
-                                <canvas id="sparklineRSI" class="sparkline"></canvas>
-                            </div>
-                            <div class="vital-value" id="vitalRSI">--</div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" id="vitalRSIBar" style="width: 0%"></div>
-                            </div>
-                        </div>
-                        <div class="vital-card">
-                            <div class="vital-header-row">
-                                <span class="vital-label">Relative Volume</span>
-                                <canvas id="sparklineVol" class="sparkline"></canvas>
-                            </div>
-                            <div class="vital-value" id="vitalVol">--</div>
-                            <small id="vitalVolDetail" class="text-secondary">vs 20d Avg</small>
-                        </div>
-                        <div class="vital-card">
-                            <div class="vital-header-row">
-                                <span class="vital-label">MACD Momentum</span>
-                                <canvas id="sparklineMACD" class="sparkline"></canvas>
-                            </div>
-                            <div class="vital-value" id="vitalMACD">--</div>
-                            <small id="vitalMACDDetail" class="text-secondary">--</small>
-                        </div>
-                        <div class="vital-card glass" id="optionsIntelCard"
-                            style="display:none; border-left: 2px solid var(--accent-blue);">
-                            <div class="vital-header-row">
-                                <span class="vital-label">Institutional Sentiment</span>
-                                <span id="optionsSentiment" class="mini-consensus"
-                                    style="font-size:0.6rem;">Neutral</span>
-                            </div>
-                            <div class="vital-value" id="optionsStrike">--</div>
-                            <small class="text-secondary">Most Active Strike Price</small>
-                            <div
-                                style="margin-top:0.4rem; font-size:0.65rem; display:flex; justify-content:space-between;">
-                                <span>P/C: <b id="pcRatio">--</b></span>
-                                <span>IV: <b id="avgIV">--</b>%</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="ticker-summary glass">
-                    <div class="ticker-header">
-                        <h2 id="tickerName">AAPL</h2>
-                        <span id="tickerPrice" class="price">$150.00</span>
-                    </div>
-                    <div class="consensus-badge" id="overallConsensus">
-                        Strong Bullish Consensus
-                    </div>
-                    <button id="exportReportBtn" class="export-btn" title="Export Research Report">
-                        <i class="fas fa-file-export"></i> Export
-                    </button>
-                </section>
-
-                <section class="strategies-section">
-                    <h3><i class="fas fa-bolt"></i> Strategy Spotlight</h3>
-                    <div id="strategiesList" class="strategy-grid">
-                        <!-- Strategies will be injected here -->
-                    </div>
-                </section>
-
-                <section class="analyst-council">
-                    <h3><i class="fas fa-users-viewfinder"></i> The Analyst Council</h3>
-                    <div id="councilGrid" class="council-grid">
-                        <!-- Persona cards will be injected here -->
-                    </div>
-                </section>
-
-                <section class="news-section">
-                    <h3><i class="fas fa-newspaper"></i> Catalyst News Feed</h3>
-                    <div id="newsFeed" class="news-feed-grid">
-                        <!-- News items will be injected here -->
-                    </div>
-                </section>
-            </main>
-
-            <div id="loader" class="loader-container hidden">
-                <div class="spinner"></div>
-                <p>Consulting the Greats...</p>
+        <div id="tradePlanCard" class="trade-plan-card hidden">
+            <div class="trade-header">
+                <i class="fas fa-chess-board"></i> Trade Plan
             </div>
-
-            <div id="welcome" class="welcome-screen">
-                <div class="welcome-content">
-                    <h1>Ready to Analyze?</h1>
-                    <p>Enter a stock ticker to see what the world's greatest investors would say about it.</p>
-                    <div class="demo-tickers">
-                        <button class="demo-btn">NVDA</button>
-                        <button class="demo-btn">TSLA</button>
-                        <button class="demo-btn">BRK.B</button>
-                        <button class="demo-btn">AMD</button>
+            <div class="trade-grid">
+                <div class="trade-level">
+                    <span>Entry Zone</span>
+                    <strong id="tpEntry">--</strong>
+                </div>
+                <div class="trade-level">
+                    <span>Target</span>
+                    <strong id="tpTarget" class="text-success">--</strong>
+                </div>
+                <div class="trade-level">
+                    <span>Stop Loss</span>
+                    <strong id="tpStop" class="text-danger">--</strong>
+                </div>
+            </div>
+            <div class="position-sizer">
+                <div class="sizer-inputs">
+                    <div>
+                        <label>Portfolio ($)</label>
+                        <input type="number" id="accountSize" value="10000">
                     </div>
+                    <div>
+                        <label>Risk (%)</label>
+                        <input type="number" id="riskPercent" value="2" step="0.5">
+                    </div>
+                </div>
+                <div class="sizer-result">
+                    Recommendation: <strong id="sizerResult">-- Shares</strong>
                 </div>
             </div>
         </div>
+        </section>
 
-        <div id="modalOverlay" class="modal-overlay hidden">
-            <div class="modal-content glass">
-                <button id="closeModal" class="close-btn"><i class="fas fa-times"></i></button>
-                <div id="modalBody">
-                    <!-- Detailed analysis will be injected here -->
+        <!-- Technical Vital Signs -->
+        <section class="vital-signs-section glass" style="margin-top: 1.5rem; padding: 1rem;">
+            <div class="section-header" style="margin-bottom: 1rem;">
+                <h3><i class="fas fa-heartbeat"></i> Technical Vital Signs</h3>
+            </div>
+            <div class="vital-grid">
+                <div class="vital-card">
+                    <div class="vital-header-row">
+                        <span class="vital-label">Volatility Squeeze</span>
+                        <canvas id="sparklineSqueeze" class="sparkline"></canvas>
+                    </div>
+                    <div class="vital-value" id="vitalSqueeze">--</div>
+                    <small id="vitalSqueezeDetail" class="text-secondary">--</small>
+                </div>
+                <div class="vital-card">
+                    <div class="vital-header-row">
+                        <span class="vital-label">RSI (14)</span>
+                        <canvas id="sparklineRSI" class="sparkline"></canvas>
+                    </div>
+                    <div class="vital-value" id="vitalRSI">--</div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="vitalRSIBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="vital-card">
+                    <div class="vital-header-row">
+                        <span class="vital-label">Relative Volume</span>
+                        <canvas id="sparklineVol" class="sparkline"></canvas>
+                    </div>
+                    <div class="vital-value" id="vitalVol">--</div>
+                    <small id="vitalVolDetail" class="text-secondary">vs 20d Avg</small>
+                </div>
+                <div class="vital-card">
+                    <div class="vital-header-row">
+                        <span class="vital-label">MACD Momentum</span>
+                        <canvas id="sparklineMACD" class="sparkline"></canvas>
+                    </div>
+                    <div class="vital-value" id="vitalMACD">--</div>
+                    <small id="vitalMACDDetail" class="text-secondary">--</small>
+                </div>
+                <div class="vital-card glass" id="optionsIntelCard"
+                    style="display:none; border-left: 2px solid var(--accent-blue);">
+                    <div class="vital-header-row">
+                        <span class="vital-label">Institutional Sentiment</span>
+                        <span id="optionsSentiment" class="mini-consensus" style="font-size:0.6rem;">Neutral</span>
+                    </div>
+                    <div class="vital-value" id="optionsStrike">--</div>
+                    <small class="text-secondary">Most Active Strike Price</small>
+                    <div style="margin-top:0.4rem; font-size:0.65rem; display:flex; justify-content:space-between;">
+                        <span>P/C: <b id="pcRatio">--</b></span>
+                        <span>IV: <b id="avgIV">--</b>%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="ticker-summary glass">
+            <div class="ticker-header">
+                <h2 id="tickerName">AAPL</h2>
+                <span id="tickerPrice" class="price">$150.00</span>
+            </div>
+            <div class="consensus-badge" id="overallConsensus">
+                Strong Bullish Consensus
+            </div>
+            <button id="exportReportBtn" class="export-btn" title="Export Research Report">
+                <i class="fas fa-file-export"></i> Export
+            </button>
+        </section>
+
+        <section class="strategies-section">
+            <h3><i class="fas fa-bolt"></i> Strategy Spotlight</h3>
+            <div id="strategiesList" class="strategy-grid">
+                <!-- Strategies will be injected here -->
+            </div>
+        </section>
+
+        <section class="analyst-council">
+            <h3><i class="fas fa-users-viewfinder"></i> The Analyst Council</h3>
+            <div id="councilGrid" class="council-grid">
+                <!-- Persona cards will be injected here -->
+            </div>
+        </section>
+
+        <section class="news-section">
+            <h3><i class="fas fa-newspaper"></i> Catalyst News Feed</h3>
+            <div id="newsFeed" class="news-feed-grid">
+                <!-- News items will be injected here -->
+            </div>
+        </section>
+        </main>
+
+        <div id="loader" class="loader-container hidden">
+            <div class="spinner"></div>
+            <p>Consulting the Greats...</p>
+        </div>
+
+        <div id="welcome" class="welcome-screen">
+            <div class="welcome-content">
+                <h1>Ready to Analyze?</h1>
+                <p>Enter a stock ticker to see what the world's greatest investors would say about it.</p>
+                <div class="demo-tickers">
+                    <button class="demo-btn">NVDA</button>
+                    <button class="demo-btn">TSLA</button>
+                    <button class="demo-btn">BRK.B</button>
+                    <button class="demo-btn">AMD</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <script src="app.js"></script>
+    <div id="modalOverlay" class="modal-overlay hidden">
+        <div class="modal-content glass">
+            <button id="closeModal" class="close-btn"><i class="fas fa-times"></i></button>
+            <div id="modalBody">
+                <!-- Detailed analysis will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 
 </html>

@@ -139,6 +139,29 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('priorityConfidence').textContent = data.priority.confidence;
         }
 
+        // --- TREND ALIGNMENT RENDER ---
+        const mtf = data.technical_indicators.mtf_alignment;
+        const rs = data.technical_indicators.relative_strength;
+
+        const updateTag = (id, val) => {
+            const el = document.getElementById(id);
+            const span = el.querySelector('.trend-val');
+            span.textContent = val;
+            span.className = 'trend-val ' + val.toLowerCase();
+        };
+
+        updateTag('tagMonthly', mtf.monthly);
+        updateTag('tagWeekly', mtf.weekly);
+        updateTag('tagDaily', mtf.daily);
+
+        const leaderTag = document.getElementById('rsLeaderTag');
+        if (rs.status === 'Leader') {
+            leaderTag.classList.remove('hidden');
+            leaderTag.title = `Outperforming SPY by ${rs.value}%`;
+        } else {
+            leaderTag.classList.add('hidden');
+        }
+
         // Update Summary
         document.getElementById('tickerName').textContent = data.ticker;
         document.getElementById('tickerPrice').textContent = `$${data.current_price.toFixed(2)}`;
@@ -185,6 +208,13 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('tpTarget').textContent = data.trade_plan.target;
             document.getElementById('tpStop').textContent = data.trade_plan.stop_loss;
             tradeCard.classList.remove('hidden');
+
+            // Initial Position Sizer Calculation
+            updatePositionSizer(data.trade_plan);
+
+            // Attach listeners for dynamic update
+            document.getElementById('accountSize').oninput = () => updatePositionSizer(data.trade_plan);
+            document.getElementById('riskPercent').oninput = () => updatePositionSizer(data.trade_plan);
         } else {
             tradeCard.classList.add('hidden');
         }
@@ -527,3 +557,19 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchIntelligence();
     setInterval(fetchIntelligence, 30000); // Polling intelligence every 30s
 });
+
+function updatePositionSizer(tradePlan) {
+    const accSize = parseFloat(document.getElementById('accountSize').value) || 10000;
+    const rPk = parseFloat(document.getElementById('riskPercent').value) || 2;
+    const entry = parseFloat(tradePlan.entry_zone.replace('$', '').split('-')[0].trim()) || 0;
+    const stop = parseFloat(tradePlan.stop_loss.replace('$', '').trim()) || 0;
+    const resultEl = document.getElementById('sizerResult');
+    if (entry > 0 && stop > 0 && entry > stop) {
+        const totalRisk = accSize * (rPk / 100);
+        const riskPerShare = entry - stop;
+        const shares = Math.floor(totalRisk / riskPerShare);
+        resultEl.textContent = shares > 0 ? shares + ' Shares' : '-- Shares';
+    } else {
+        resultEl.textContent = '-- Shares';
+    }
+}

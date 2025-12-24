@@ -40,7 +40,8 @@ def analyze():
             
         news = orchestrator.get_ticker_news(ticker)
         options = orchestrator.get_options_intel(ticker)
-        analysis = engine.analyze_ticker(ticker, df, news, options)
+        benchmark_df = orchestrator.get_stock_data("SPY")
+        analysis = engine.analyze_ticker(ticker, df, news, options, benchmark_df)
         
         # --- SHARED PERSISTENCE ---
         # 1. Update Global History
@@ -131,7 +132,8 @@ def run_autonomous_scanner():
                         
                     news = orchestrator.get_ticker_news(ticker)
                     options = orchestrator.get_options_intel(ticker)
-                    analysis = engine.analyze_ticker(ticker, df, news, options)
+                    benchmark_df = orchestrator.get_stock_data("SPY")
+                    analysis = engine.analyze_ticker(ticker, df, news, options, benchmark_df)
                     
                     if "Bullish" in analysis['consensus'] or "Strong" in analysis['consensus']:
                         score = analysis.get('master_score', {}).get('value', 0)
