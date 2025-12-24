@@ -629,7 +629,7 @@ class AnalystEngine:
         weekly = "Bullish" if weekly_df.iloc[-1] > sma10_w.iloc[-1] else "Bearish"
         
         # Monthly
-        monthly_df = df['Close'].resample('M').last()
+        monthly_df = df['Close'].resample('ME').last()
         sma10_m = monthly_df.rolling(10).mean() # ~10 months
         monthly = "Bullish" if monthly_df.iloc[-1] > sma10_m.iloc[-1] else "Bearish"
         
