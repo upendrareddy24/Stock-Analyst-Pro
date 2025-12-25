@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- SMART CHART RENDER ---
         if (data.chart_data && window.LightweightCharts) {
-            renderSmartChart(data.chart_data, data.vpa_analysis, data.patterns);
+            renderSmartChart(data.chart_data, data.vpa_analysis, data.patterns, data.trade_plan);
         }
 
         // --- TREND ALIGNMENT RENDER ---
@@ -705,7 +705,7 @@ function renderSectorLeaderboard(data) {
 /* --- SMART CHART LOGIC --- */
 let chartInstance = null;
 
-function renderSmartChart(ohlcData, vpaData, patterns) {
+function renderSmartChart(ohlcData, vpaData, patterns, tradePlan) {
     const container = document.getElementById("tvChart");
     if (!container) return;
 
@@ -745,6 +745,51 @@ function renderSmartChart(ohlcData, vpaData, patterns) {
         wickDownColor: "#f87171",
     });
     candleSeries.setData(ohlcData);
+
+    // Draw Trade Plan Lines (Support/Resistance)
+    if (tradePlan) {
+        const parsePrice = (str) => {
+            const match = str.match(/\$?([\d,]+\.?\d*)/);
+            return match ? parseFloat(match[1].replace(",", "")) : null;
+        };
+
+        const stopPrice = parsePrice(tradePlan.stop_loss);
+        const targetPrice = parsePrice(tradePlan.target);
+        const entryPrice = parsePrice(tradePlan.entry_zone.split('-')[0]);
+
+        if (stopPrice) {
+            candleSeries.createPriceLine({
+                price: stopPrice,
+                color: '#f87171',
+                lineWidth: 2,
+                lineStyle: 1, // Dotted
+                axisLabelVisible: true,
+                title: 'STOP LOSS (Support)',
+            });
+        }
+
+        if (targetPrice) {
+            candleSeries.createPriceLine({
+                price: targetPrice,
+                color: '#60a5fa',
+                lineWidth: 2,
+                lineStyle: 1, // Dotted
+                axisLabelVisible: true,
+                title: 'TARGET (Resistance)',
+            });
+        }
+
+        if (entryPrice) {
+            candleSeries.createPriceLine({
+                price: entryPrice,
+                color: '#fbbf24',
+                lineWidth: 1,
+                lineStyle: 2, // Dashed
+                axisLabelVisible: true,
+                title: 'ENTRY',
+            });
+        }
+    }
 
     // Volume Series (Overlay)
     const volumeSeries = chartInstance.addHistogramSeries({
