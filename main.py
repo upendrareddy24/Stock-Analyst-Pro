@@ -1,7 +1,7 @@
 import os
 import re
 from flask import Flask, request, jsonify, send_from_directory
-from collaborative_models import db, SharedHistory, BullishRadar, PersonaPick, MarketIntelligence, TradeJournal
+from collaborative_models import db, SharedHistory, BullishRadar, PersonaPick, MarketIntelligence
 from analyst_engine import AnalystEngine
 from data_orchestrator import DataOrchestrator
 import threading
@@ -164,49 +164,6 @@ def sector_scout():
         results[sector] = sector_results[:5]
     return jsonify(results)
 
-@app.route('/api/journal', methods=['GET', 'POST', 'PUT'])
-def journal():
-    if request.method == 'POST':
-        data = request.json
-        try:
-            new_trade = TradeJournal(
-                ticker=data.get('ticker'),
-                action=data.get('action'),
-                entry_price=data.get('entry_price'),
-                shares=data.get('shares'),
-                stop_loss=data.get('stop_loss'),
-                target=data.get('target'),
-                psych_checked=data.get('psych_checked', False)
-            )
-            db.session.add(new_trade)
-            db.session.commit()
-            return jsonify({"message": "Trade saved successfully", "id": new_trade.id}), 201
-        except Exception as e:
-            return jsonify({"error": str(e)}), 400
-            
-    elif request.method == 'PUT':
-        # Update existing trade (e.g. set Status to WIN/LOSS)
-        trade_id = request.args.get('id')
-        data = request.json
-        try:
-            trade = TradeJournal.query.get(trade_id)
-            if not trade:
-                return jsonify({"error": "Trade not found"}), 404
-            
-            if 'status' in data:
-                trade.status = data['status']
-            if 'exit_price' in data:
-                trade.exit_price = data['exit_price']
-                
-            db.session.commit()
-            return jsonify({"message": "Trade updated"}), 200
-        except Exception as e:
-            return jsonify({"error": str(e)}), 400
-
-    else:
-        # GET: List recent trades
-        trades = TradeJournal.query.order_by(TradeJournal.timestamp.desc()).limit(20).all()
-        return jsonify([t.to_dict() for t in trades])
 
 # --- AUTONOMOUS SCANNER ENGINE ---
 def run_autonomous_scanner():

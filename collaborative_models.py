@@ -48,29 +48,6 @@ class PersonaPick(db.Model):
             'timestamp': self.timestamp.timestamp() * 1000
         }
 
-class TradeJournal(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    ticker = db.Column(db.String(20), nullable=False)
-    action = db.Column(db.String(10), nullable=False) # LONG/SHORT
-    entry_price = db.Column(db.Float, nullable=False)
-    shares = db.Column(db.Integer, nullable=False)
-    stop_loss = db.Column(db.Float, nullable=True)
-    target = db.Column(db.Float, nullable=True)
-    psych_checked = db.Column(db.Boolean, default=False)
-    status = db.Column(db.String(20), default="OPEN") # OPEN, CLOSED
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'ticker': self.ticker,
-            'action': self.action,
-            'entry': self.entry_price,
-            'shares': self.shares,
-            'status': self.status,
-            'psych': self.psych_checked,
-            'date': self.timestamp.strftime('%m/%d %H:%M')
-        }
 
 class MarketIntelligence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
