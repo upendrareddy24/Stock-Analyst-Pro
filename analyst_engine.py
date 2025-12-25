@@ -35,13 +35,15 @@ class AnalystEngine:
         actionable_strategies = self._detect_specific_strategies(df, news)
         options_intel = self._analyze_options(options) if options else {"has_options": False}
         
+        consensus_str = self._calculate_consensus(results)
+        
         return {
             "ticker": ticker,
             "current_price": round(df['Close'].iloc[-1], 2),
-            "consensus": self._calculate_consensus(results),
+            "consensus": consensus_str,
             "priority": self._generate_priority(results, actionable_strategies),
             "master_score": self._calculate_master_score(results, actionable_strategies, options_intel),
-            "trade_plan": self._generate_trade_plan(df, results, actionable_strategies),
+            "trade_plan": self._generate_trade_plan(df, consensus_str, df['Close'].iloc[-1]),
             "technical_indicators": {
                 "squeeze": self._calculate_squeeze(df),
                 "rsi": self._calculate_rsi(df),
@@ -56,10 +58,10 @@ class AnalystEngine:
             "personas": results,
             "actionable_strategies": actionable_strategies,
             "recent_news": news[:5] if news else [],
-            "recent_news": news[:5] if news else [],
             "options_intel": options_intel,
-            "patterns": self._detect_chart_patterns(df),
+            "market_climate": self._analyze_market_climate(benchmark_df, df),
             "vpa_analysis": self._detect_vpa_patterns(df),
+            "patterns": self._detect_chart_patterns(df),
             "chart_data": self._prepare_chart_data(df)
         }
 
@@ -489,13 +491,6 @@ class AnalystEngine:
             "label": label
         }
 
-    def _generate_trade_plan(self, df: pd.DataFrame, results: Dict[str, Any], strategies: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Generates simulated Entry, Target, and Stop Loss levels.
-        """
-        current_price = df['Close'].iloc[-1]
-        # We don't necessarily need options for the trade plan levels, but we'll pass None for consistency
-        score_data = self._calculate_master_score(results, strategies, None)
         
         if score_data['value'] < 60:
             return None # No trade recommended
@@ -824,7 +819,7 @@ class AnalystEngine:
         # 3. No Demand (Up Candle, Low Vol)
         if current['Close'] > prev['Close'] and current['Volume'] < avg_vol * 0.7:
              signals.append({
-                "name": "No Demand",
+                "name": "No Demand (Risky Reversal)",
                 "bias": "Bearish",
                 "color": "orange",
                 "description": "Price rising on weak volume. Lack of professional interest."

@@ -164,7 +164,7 @@ def sector_scout():
         results[sector] = sector_results[:5]
     return jsonify(results)
 
-@app.route('/api/journal', methods=['GET', 'POST'])
+@app.route('/api/journal', methods=['GET', 'POST', 'PUT'])
 def journal():
     if request.method == 'POST':
         data = request.json
@@ -184,6 +184,25 @@ def journal():
         except Exception as e:
             return jsonify({"error": str(e)}), 400
             
+    elif request.method == 'PUT':
+        # Update existing trade (e.g. set Status to WIN/LOSS)
+        trade_id = request.args.get('id')
+        data = request.json
+        try:
+            trade = TradeJournal.query.get(trade_id)
+            if not trade:
+                return jsonify({"error": "Trade not found"}), 404
+            
+            if 'status' in data:
+                trade.status = data['status']
+            if 'exit_price' in data:
+                trade.exit_price = data['exit_price']
+                
+            db.session.commit()
+            return jsonify({"message": "Trade updated"}), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 400
+
     else:
         # GET: List recent trades
         trades = TradeJournal.query.order_by(TradeJournal.timestamp.desc()).limit(20).all()

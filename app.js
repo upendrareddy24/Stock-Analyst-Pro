@@ -917,7 +917,12 @@ async function loadJournal() {
                 <td style="padding:0.6rem;">$${t.entry.toFixed(2)}</td>
                 <td style="padding:0.6rem;">$${((t.entry - (t.stop_loss || 0)) * t.shares).toFixed(0)}</td>
                 <td style="padding:0.6rem;">${t.psych ? "<i class=\"fas fa-check-circle\" style=\"color:#60a5fa;\"></i>" : "<span style=\"color:#94a3b8\">&ndash;</span>"}</td>
-                <td style="padding:0.6rem;">${t.status}</td>
+                <td style="padding:0.6rem;">
+                    ${t.status === 'OPEN' ? `
+                        <button onclick="updateTradeStatus(${t.id}, 'WIN')" style="background:none; border:none; color:#34d399; cursor:pointer; margin-right:5px;" title="Mark as Win"><i class="fas fa-check"></i></button>
+                        <button onclick="updateTradeStatus(${t.id}, 'LOSS')" style="background:none; border:none; color:#f87171; cursor:pointer;" title="Mark as Loss"><i class="fas fa-times"></i></button>
+                    ` : `<span style="color:${t.status === 'WIN' ? '#34d399' : t.status === 'LOSS' ? '#f87171' : '#94a3b8'}">${t.status}</span>`}
+                </td>
             `;
             tbody.appendChild(tr);
 
@@ -931,3 +936,18 @@ async function loadJournal() {
         console.error(e);
     }
 }
+
+window.updateTradeStatus = async (id, status) => {
+    try {
+        const res = await fetch(`/api/journal?id=${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: status })
+        });
+        if (res.ok) {
+            loadJournal(); // Refresh list
+        }
+    } catch (e) {
+        console.error(e);
+    }
+};
