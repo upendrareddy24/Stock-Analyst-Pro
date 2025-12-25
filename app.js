@@ -270,107 +270,104 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Squeeze
             const sqEl = document.getElementById('vitalSqueeze');
-            const sqDet = document.getElementById('vitalSqueezeDetail');
+            const sqCard = sqEl.closest('.vital-card');
             sqEl.textContent = tech.squeeze.status;
-            sqDet.textContent = tech.squeeze.detail;
-            sqEl.style.color = tech.squeeze.color === 'orange' ? '#fbbf24' : tech.squeeze.color === 'green' ? '#34d399' : tech.squeeze.color === 'red' ? '#f87171' : '#9ca3af';
-            renderSparkline('sparklineSqueeze', tech.squeeze.history, tech.squeeze.color === 'orange' ? '#fbbf24' : '#34d399');
+            document.getElementById('vitalSqueezeDetail').textContent = tech.squeeze.detail;
+
+            let sqColor = '#94a3b8';
+            if (tech.squeeze.color === 'green') sqColor = '#34d399';
+            else if (tech.squeeze.color === 'red') sqColor = '#f87171';
+            else if (tech.squeeze.color === 'orange') sqColor = '#fbbf24';
+
+            sqCard.style.border = `1px solid ${sqColor}`;
+            sqCard.style.boxShadow = `0 0 10px ${sqColor}20`; // subtle glow
+            renderSparkline('sparklineSqueeze', tech.squeeze.history, sqColor);
 
             // RSI
-            // Interpretation: <30 Oversold (Buy Opp), >70 Overbought (Sell Risk), 30-70 Neutral
             const rsiVal = tech.rsi.value;
-            let rsiColor = '#fbbf24'; // Yellow
-            if (rsiVal < 30) rsiColor = '#34d399'; // Green (Oversold)
-            else if (rsiVal > 70) rsiColor = '#f87171'; // Red (Overbought)
+            const rsiCard = document.getElementById('vitalRSI').closest('.vital-card');
+            let rsiColor = '#fbbf24'; // Neutral
+            if (rsiVal < 30) rsiColor = '#34d399'; // Bullish
+            else if (rsiVal > 70) rsiColor = '#f87171'; // Bearish
 
             document.getElementById('vitalRSI').textContent = rsiVal;
-            document.getElementById('vitalRSI').parentElement.parentElement.title = "Relative Strength Index: Measures momentum. <30 is Oversold (Bullish), >70 is Overbought (Bearish).";
-            const rsiBar = document.getElementById('vitalRSIBar');
-            rsiBar.style.width = `${rsiVal}%`;
-            rsiBar.style.backgroundColor = rsiColor;
+            document.getElementById('vitalRSIBar').style.width = `${rsiVal}%`;
+            document.getElementById('vitalRSIBar').style.backgroundColor = rsiColor;
+
+            rsiCard.style.border = `1px solid ${rsiColor}`;
+            rsiCard.style.boxShadow = `0 0 10px ${rsiColor}20`;
             renderSparkline('sparklineRSI', tech.rsi.history, rsiColor);
 
             // Volume
-            // Interpretation: >1.0 High Interest, <0.8 Low Interest
             const rvolVal = tech.rel_volume.value;
+            const volCard = document.getElementById('vitalVol').closest('.vital-card');
             let rvolColor = '#fbbf24';
-            if (rvolVal > 1.2) rvolColor = '#34d399'; // High Vol
-            else if (rvolVal < 0.8) rvolColor = '#f87171'; // Low Vol
+            if (rvolVal > 1.2) rvolColor = '#34d399'; // High
+            else if (rvolVal < 0.8) rvolColor = '#f87171'; // Low
 
             document.getElementById('vitalVol').textContent = rvolVal + 'x';
-            document.getElementById('vitalVol').parentElement.parentElement.title = "Relative Volume: Current vol vs 20-day avg. >1.2x indicates high institutional interest.";
             document.getElementById('vitalVolDetail').style.color = rvolColor;
+
+            volCard.style.border = `1px solid ${rvolColor}`;
+            volCard.style.boxShadow = `0 0 10px ${rvolColor}20`;
             renderSparkline('sparklineVol', tech.rel_volume.history, rvolColor);
 
             // MACD
             const macdStatus = tech.macd.status;
+            const macdCard = document.getElementById('vitalMACD').closest('.vital-card');
             let macdColor = '#fbbf24';
             if (macdStatus.includes('Bullish')) macdColor = '#34d399';
             if (macdStatus.includes('Bearish')) macdColor = '#f87171';
 
-            const macdCard = document.getElementById('vitalMACD').parentElement.parentElement;
-            macdCard.title = "MACD: Trend-following momentum indicator. Bullish Crossover = Buy Signal.";
             document.getElementById('vitalMACD').textContent = macdStatus;
             document.getElementById('vitalMACD').style.color = macdColor;
             document.getElementById('vitalMACDDetail').textContent = tech.macd.trend;
+
+            macdCard.style.border = `1px solid ${macdColor}`;
+            macdCard.style.boxShadow = `0 0 10px ${macdColor}20`;
             renderSparkline('sparklineMACD', tech.macd.history, macdColor);
 
-            // NEW: ATR (Volatility Range)
-            const atrCard = document.createElement('div');
-            atrCard.className = 'vital-card';
-            atrCard.title = "Average True Range: The average $ amount this stock moves per day. Higher = Riskier.";
-            atrCard.innerHTML = `
-                <div class="vital-header-row">
-                    <span class="vital-label">ATR (Range)</span>
-                    <canvas id="sparklineATR" class="sparkline"></canvas>
-                </div>
-                <div class="vital-value" style="color:#e2e8f0">$${tech.atr.value}</div>
-                <small class="text-secondary">Avg Daily Move</small>
-            `;
-            document.querySelector('.vital-grid').appendChild(atrCard);
-            renderSparkline('sparklineATR', tech.atr.history, '#64748b'); // Neutral color for volatility
+            // ATR
+            const atrVal = tech.atr.value;
+            const atrCard = document.getElementById('cardATR'); // Targeted by ID
+            // ATR is neutral/risk, so we usually keep it neutral unless extreme. 
+            // Let's just use neutral blue/purple styling for consistency unless we add historical ATR comparison.
+            const atrColor = '#60a5fa';
 
-            // NEW: ADX (Trend Strength)
-            // >25 Strong, <20 Weak
+            document.getElementById('vitalATR').textContent = `$${atrVal}`;
+            atrCard.style.border = `1px solid ${atrColor}`;
+            atrCard.style.boxShadow = `0 0 10px ${atrColor}20`;
+            renderSparkline('sparklineATR', tech.atr.history, atrColor);
+
+            // ADX
             const adxVal = tech.adx.value;
+            const adxCard = document.getElementById('cardADX');
             let adxColor = '#fbbf24';
-            if (adxVal > 25) adxColor = '#34d399';
-            if (adxVal < 20) adxColor = '#f87171';
+            if (adxVal > 25) adxColor = '#34d399'; // Strong Trend
+            if (adxVal < 20) adxColor = '#f87171'; // Weak Trend
 
-            const adxCard = document.createElement('div');
-            adxCard.className = 'vital-card';
-            adxCard.title = "ADX: Trend Strength. >25 means the stock is trending strongly (good). <20 means chopping (bad).";
+            document.getElementById('vitalADX').textContent = adxVal;
+            document.getElementById('vitalADXbar').style.width = `${Math.min(adxVal, 100)}%`;
+            document.getElementById('vitalADXbar').style.backgroundColor = adxColor;
+            document.getElementById('vitalADXStatus').textContent = tech.adx.status;
 
-            // Fix text overlap UI issue
-            adxCard.innerHTML = `
-                <div class="vital-header-row">
-                    <span class="vital-label">ADX Strength</span>
-                </div>
-                <div class="vital-value" style="color:${adxColor}">${adxVal}</div>
-                <span class="mini-consensus" style="font-size:0.55rem; background:rgba(255,255,255,0.05); display:block; margin-bottom:4px;">${tech.adx.status}</span>
-                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${Math.min(adxVal, 100)}%; background-color:${adxColor}"></div></div>
-            `;
-            document.querySelector('.vital-grid').appendChild(adxCard);
+            adxCard.style.border = `1px solid ${adxColor}`;
+            adxCard.style.boxShadow = `0 0 10px ${adxColor}20`;
 
-            // NEW: VWAP Deviation
-            // Positive = Bullish, Negative = Bearish
-            const vwapDevNum = parseFloat(tech.vwap.deviation.replace('%', ''));
+            // VWAP Deviation
+            const vwapDevStr = tech.vwap.deviation;
+            const vwapDevNum = parseFloat(vwapDevStr.replace('%', ''));
+            const vwapCard = document.getElementById('cardVWAP');
             let vwapColor = '#fbbf24';
-            if (vwapDevNum > 0) vwapColor = '#34d399'; // Price > VWAP (Bullish)
-            if (vwapDevNum < 0) vwapColor = '#f87171'; // Price < VWAP (Bearish)
+            if (vwapDevNum > 0) vwapColor = '#34d399'; // Bullish
+            if (vwapDevNum < 0) vwapColor = '#f87171'; // Bearish
 
-            const vwapCard = document.createElement('div');
-            vwapCard.className = 'vital-card';
-            vwapCard.title = "VWAP Deviation: Distance from the Volume Weighted Avg Price. Positive = Buyers in control.";
-            vwapCard.innerHTML = `
-                <div class="vital-header-row">
-                    <span class="vital-label">VWAP Dev</span>
-                    <small style="font-size:0.5rem; color:#a78bfa;">INSTITUTIONAL</small>
-                </div>
-                <div class="vital-value" style="color:${vwapColor}">${tech.vwap.deviation}</div>
-                <small class="text-secondary">vs Avg Price: $${tech.vwap.value}</small>
-            `;
-            document.querySelector('.vital-grid').appendChild(vwapCard);
+            document.getElementById('vitalVWAP').textContent = vwapDevStr;
+            document.getElementById('vitalVWAP').style.color = vwapColor;
+            document.getElementById('vitalVWAPDetail').textContent = `vs Avg Price: $${tech.vwap.value}`;
+
+            vwapCard.style.border = `1px solid ${vwapColor}`;
+            vwapCard.style.boxShadow = `0 0 10px ${vwapColor}20`;
 
 
             // Options Intel

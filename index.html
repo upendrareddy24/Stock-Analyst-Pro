@@ -223,6 +223,40 @@
                             <div class="vital-value" id="vitalMACD">--</div>
                             <small id="vitalMACDDetail" class="text-secondary">--</small>
                         </div>
+                        <!-- NEW: ATR -->
+                        <div class="vital-card" id="cardATR" title="Average True Range: Higher = More Volatile/Risky.">
+                            <div class="vital-header-row">
+                                <span class="vital-label">ATR (Range)</span>
+                                <canvas id="sparklineATR" class="sparkline"></canvas>
+                            </div>
+                            <div class="vital-value" id="vitalATR">--</div>
+                            <small class="text-secondary">Avg Daily Move</small>
+                        </div>
+
+                        <!-- NEW: ADX -->
+                        <div class="vital-card" id="cardADX"
+                            title="Trend Strength. >25 = Strong Trend, <20 = Weak/Choppy.">
+                            <div class="vital-header-row">
+                                <span class="vital-label">ADX Strength</span>
+                                <span class="mini-consensus" id="vitalADXStatus"
+                                    style="font-size:0.5rem; background:rgba(255,255,255,0.1);">--</span>
+                            </div>
+                            <div class="vital-value" id="vitalADX">--</div>
+                            <div class="progress-bar-bg">
+                                <div id="vitalADXBar" class="progress-bar-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- NEW: VWAP Deviation -->
+                        <div class="vital-card" id="cardVWAP"
+                            title="Price vs Institutional VWAP. Positive = Bullish Control.">
+                            <div class="vital-header-row">
+                                <span class="vital-label">VWAP Dev</span>
+                                <small style="font-size:0.5rem; color:#a78bfa;">INSTITUTIONAL</small>
+                            </div>
+                            <div class="vital-value" id="vitalVWAP">--</div>
+                            <small id="vitalVWAPDetail" class="text-secondary">vs Avg Price: --</small>
+                        </div>
                         <div class="vital-card glass" id="optionsIntelCard"
                             style="display:none; border-left: 2px solid var(--accent-blue);">
                             <div class="vital-header-row">
