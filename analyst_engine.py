@@ -48,6 +48,9 @@ class AnalystEngine:
                 "squeeze": self._calculate_squeeze(df),
                 "rsi": self._calculate_rsi(df),
                 "macd": self._calculate_macd(df),
+                "atr": {"value": round(self._calculate_atr(df), 2), "history": [round(v, 2) for v in self._calculate_atr_history(df).tail(20).tolist()]},
+                "adx": self._calculate_adx(df),
+                "vwap": self._calculate_vwap(df),
                 "rel_volume": {
                     "value": round(df['Volume'].iloc[-1] / df['Volume'].tail(20).mean(), 2),
                     "history": [round(v, 2) for v in (df['Volume'] / df['Volume'].rolling(20).mean()).tail(20).tolist()]
@@ -553,6 +556,63 @@ class AnalystEngine:
         ranges = pd.concat([high_low, high_close, low_close], axis=1)
         true_range = ranges.max(axis=1)
         return true_range.tail(period).mean()
+
+    def _calculate_atr_history(self, df: pd.DataFrame, period: int = 14) -> pd.Series:
+        """Helper to get full ATR history for sparklines."""
+        high_low = df['High'] - df['Low']
+        high_close = (df['High'] - df['Close'].shift()).abs()
+        low_close = (df['Low'] - df['Close'].shift()).abs()
+        ranges = pd.concat([high_low, high_close, low_close], axis=1)
+        true_range = ranges.max(axis=1)
+        return true_range.rolling(window=period).mean()
+
+    def _calculate_adx(self, df: pd.DataFrame, period: int = 14) -> Dict[str, Any]:
+        """Calculates ADX to determine trend strength."""
+        try:
+            plus_dm = df['High'].diff()
+            minus_dm = df['Low'].diff()
+            plus_dm = plus_dm.where((plus_dm > minus_dm) & (plus_dm > 0), 0.0)
+            minus_dm = minus_dm.where((minus_dm > plus_dm) & (minus_dm > 0), 0.0)
+            
+            tr = self._calculate_atr_history(df, period)
+            atr = tr.rolling(period).mean()
+            
+            plus_di = 100 * (plus_dm.ewm(alpha=1/period).mean() / atr)
+            minus_di = 100 * (minus_dm.ewm(alpha=1/period).mean() / atr)
+            dx = (abs(plus_di - minus_di) / (plus_di + minus_di)) * 100
+            adx = dx.rolling(window=period).mean()
+            
+            val = round(adx.iloc[-1], 2)
+            status = "Weak Trend"
+            if val > 25: status = "Strong Trend"
+            if val > 50: status = "Extreme Trend"
+            
+            return {
+                "value": val,
+                "status": status,
+                "history": [round(v, 2) for v in adx.tail(20).fillna(0).tolist()]
+            }
+        except:
+             return {"value": 0, "status": "Error", "history": []}
+
+    def _calculate_vwap(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """Calculates VWAP curve."""
+        v = df['Volume'].values
+        tp = (df['High'] + df['Low'] + df['Close']) / 3
+        tp = tp.values
+        vwap = (tp * v).cumsum() / v.cumsum()
+        
+        # Check current price vs VWAP deviation
+        current = df['Close'].iloc[-1]
+        current_vwap = vwap[-1]
+        diff = ((current - current_vwap) / current_vwap) * 100
+        
+        return {
+            "value": round(current_vwap, 2),
+            "deviation": f"{round(diff, 2)}%",
+            "history": [round(v, 2) for v in vwap[-40:]], # Sending last 40 points for chart matching
+            "full_history": [{"time": t, "value": round(v, 2)} for t, v in zip(df['Date'], vwap)] # For plotting line
+        }
 
     def _calculate_squeeze(self, df: pd.DataFrame) -> Dict[str, Any]:
         """

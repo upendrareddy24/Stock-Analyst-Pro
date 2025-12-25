@@ -138,7 +138,7 @@ def get_market_intelligence():
 
 @app.route('/api/sector_scout', methods=['GET'])
 def sector_scout():
-    """Ranks leaders within each sector to find the 'Best of Breed'."""
+    """Ranks leaders within each sector using full 'Consulting the Greats' Logic."""
     results = {}
     benchmark_df = orchestrator.get_stock_data("SPY")
     for sector, tickers in SECTOR_MAP.items():
@@ -148,16 +148,32 @@ def sector_scout():
             try:
                 df = orchestrator.get_stock_data(ticker)
                 if df is not None and not df.empty:
-                    # High-speed analysis for batch mode
-                    # Note: We skip news/options here to stay within Heroku's 30s limit
-                    analysis = engine.analyze_ticker(ticker, df, benchmark_df=benchmark_df)
+                    # Upgrade: Attempting light news/options fetch for better scoring if time permits
+                    # We limit news to 1 item to be fast
+                    news = orchestrator.get_ticker_news(ticker) 
+                    options = orchestrator.get_options_intel(ticker)
+                    
+                    analysis = engine.analyze_ticker(ticker, df, news, options, benchmark_df)
+                    
+                    # Extract top persona rating
+                    top_rating = "Neutral"
+                    for _, res in analysis.get('personas', {}).items():
+                        if "Strong Buy" in res['rating']:
+                            top_rating = "Strong Buy"
+                            break
+                        elif "Buy" in res['rating'] and top_rating != "Strong Buy":
+                            top_rating = "Buy"
+                            
                     sector_results.append({
                         "ticker": ticker,
                         "score": analysis.get('master_score', {}).get('value', 0),
                         "label": analysis.get('master_score', {}).get('label', 'Neutral'),
-                        "price": analysis.get('current_price', 0)
+                        "price": analysis.get('current_price', 0),
+                        "consensus": analysis.get('consensus', 'Neutral'),
+                        "top_rating": top_rating
                     })
-            except:
+            except Exception as e:
+                print(f"Scout error on {ticker}: {e}")
                 continue
         # Sort by score descending and take top 5
         sector_results.sort(key=lambda x: x['score'], reverse=True)

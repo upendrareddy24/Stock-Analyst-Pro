@@ -157,7 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- SMART CHART RENDER ---
         if (data.chart_data && window.LightweightCharts) {
-            renderSmartChart(data.chart_data, data.vpa_analysis, data.patterns, data.trade_plan);
+            // Inject VWAP series into vpaData package for chart rendering
+            const chartPayload = data.vpa_analysis || [];
+            if (data.technical_indicators && data.technical_indicators.vwap) {
+                chartPayload.vwap_series = data.technical_indicators.vwap.full_history;
+            }
+            renderSmartChart(data.chart_data, chartPayload, data.patterns, data.trade_plan);
         }
 
         // --- TREND ALIGNMENT RENDER ---
@@ -287,6 +292,47 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('vitalMACD').textContent = tech.macd.status;
             document.getElementById('vitalMACDDetail').textContent = tech.macd.trend;
             renderSparkline('sparklineMACD', tech.macd.history, '#8b5cf6');
+
+            // NEW: ATR (Volatility Range)
+            const atrCard = document.createElement('div');
+            atrCard.className = 'vital-card';
+            atrCard.innerHTML = `
+                <div class="vital-header-row">
+                    <span class="vital-label">ATR (Range)</span>
+                    <canvas id="sparklineATR" class="sparkline"></canvas>
+                </div>
+                <div class="vital-value">$${tech.atr.value}</div>
+                <small class="text-secondary">Avg Daily Move</small>
+            `;
+            document.querySelector('.vital-grid').appendChild(atrCard);
+            renderSparkline('sparklineATR', tech.atr.history, '#f472b6');
+
+            // NEW: ADX (Trend Strength)
+            const adxCard = document.createElement('div');
+            adxCard.className = 'vital-card';
+            adxCard.innerHTML = `
+                <div class="vital-header-row">
+                    <span class="vital-label">ADX Strength</span>
+                    <span class="mini-consensus" style="font-size:0.5rem; background:rgba(255,255,255,0.1);">${tech.adx.status}</span>
+                </div>
+                <div class="vital-value">${tech.adx.value}</div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${Math.min(tech.adx.value, 100)}%; background-color:${tech.adx.value > 25 ? '#34d399' : '#94a3b8'}"></div></div>
+            `;
+            document.querySelector('.vital-grid').appendChild(adxCard);
+
+            // NEW: VWAP Deviation
+            const vwapCard = document.createElement('div');
+            vwapCard.className = 'vital-card';
+            vwapCard.innerHTML = `
+                <div class="vital-header-row">
+                    <span class="vital-label">VWAP Dev</span>
+                    <small style="font-size:0.5rem; color:#a78bfa;">INSTITUTIONAL</small>
+                </div>
+                <div class="vital-value">${tech.vwap.deviation}</div>
+                <small class="text-secondary">vs Avg Price: $${tech.vwap.value}</small>
+            `;
+            document.querySelector('.vital-grid').appendChild(vwapCard);
+
 
             // Options Intel
             const optCard = document.getElementById('optionsIntelCard');
@@ -595,6 +641,26 @@ document.addEventListener('DOMContentLoaded', () => {
         a.click();
     };
 
+    // --- POSITION SIZER PERSISTENCE ---
+    const accInput = document.getElementById('accountSize');
+    const riskInput = document.getElementById('riskPercent');
+
+    // Load saved preferences
+    if (localStorage.getItem('analyst_portfolio')) {
+        accInput.value = localStorage.getItem('analyst_portfolio');
+    }
+    if (localStorage.getItem('analyst_risk')) {
+        riskInput.value = localStorage.getItem('analyst_risk');
+    }
+
+    // Save on change
+    accInput.addEventListener('input', () => {
+        localStorage.setItem('analyst_portfolio', accInput.value);
+    });
+    riskInput.addEventListener('input', () => {
+        localStorage.setItem('analyst_risk', riskInput.value);
+    });
+
     // --- AUTOCOMPLETE LOGIC ---
     let debounceTimer;
     const tickerList = ['AAPL', 'MSFT', 'NVDA', 'TSLA', 'AMD', 'AMD', 'META', 'GOOGL', 'AMZN', 'NFLX', 'BRK.B', 'V', 'PYPL', 'DIS', 'BA', 'MSTR', 'COIN', 'PLTR', 'SNOW'];
@@ -694,6 +760,9 @@ function renderSectorLeaderboard(data) {
                 <div class="ticker-stats">
                     <div class="ticker-score">${s.score}</div>
                     <div class="ticker-label">${s.label}</div>
+                    <div style="font-size:0.55rem; color:${s.top_rating.includes('Strong') ? '#34d399' : '#94a3b8'}; margin-top:2px;">
+                        <i class="fas fa-users"></i> ${s.top_rating}
+                    </div>
                 </div>
             </div>
         `).join('');
@@ -761,10 +830,10 @@ function renderSmartChart(ohlcData, vpaData, patterns, tradePlan) {
             candleSeries.createPriceLine({
                 price: stopPrice,
                 color: '#f87171',
-                lineWidth: 2,
+                lineWidth: 1, // Thinner
                 lineStyle: 1, // Dotted
                 axisLabelVisible: true,
-                title: 'STOP LOSS (Support)',
+                title: 'STOP',
             });
         }
 
@@ -772,10 +841,10 @@ function renderSmartChart(ohlcData, vpaData, patterns, tradePlan) {
             candleSeries.createPriceLine({
                 price: targetPrice,
                 color: '#60a5fa',
-                lineWidth: 2,
+                lineWidth: 1, // Thinner
                 lineStyle: 1, // Dotted
                 axisLabelVisible: true,
-                title: 'TARGET (Resistance)',
+                title: 'TARGET',
             });
         }
 
@@ -783,12 +852,23 @@ function renderSmartChart(ohlcData, vpaData, patterns, tradePlan) {
             candleSeries.createPriceLine({
                 price: entryPrice,
                 color: '#fbbf24',
-                lineWidth: 1,
+                lineWidth: 1, // Thinner
                 lineStyle: 2, // Dashed
                 axisLabelVisible: true,
                 title: 'ENTRY',
             });
         }
+    }
+
+    // Draw VWAP Line
+    if (vpaData && vpaData.vwap_series && vpaData.vwap_series.length > 0) {
+        const vwapLine = chartInstance.addLineSeries({
+            color: '#a78bfa', // Purple for Institutional VWAP
+            lineWidth: 2,
+            lineStyle: 0, // Solid
+            title: 'VWAP',
+        });
+        vwapLine.setData(vpaData.vwap_series);
     }
 
     // Volume Series (Overlay)
