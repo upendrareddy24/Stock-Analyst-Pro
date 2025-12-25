@@ -701,3 +701,188 @@ function renderSectorLeaderboard(data) {
         container.appendChild(sectorEl);
     });
 }
+
+/* --- SMART CHART LOGIC --- */
+let chartInstance = null;
+
+function renderSmartChart(ohlcData, vpaData, patterns) {
+    const container = document.getElementById("tvChart");
+    if (!container) return;
+
+    // Reset
+    container.innerHTML = "";
+    if (chartInstance) {
+        chartInstance.remove();
+        chartInstance = null;
+    }
+
+    // Create Chart
+    chartInstance = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: 350,
+        layout: {
+            background: { type: "solid", color: "transparent" },
+            textColor: "#94a3b8",
+        },
+        grid: {
+            vertLines: { color: "rgba(255, 255, 255, 0.05)" },
+            horzLines: { color: "rgba(255, 255, 255, 0.05)" },
+        },
+        timeScale: {
+            borderColor: "rgba(255, 255, 255, 0.1)",
+        },
+        rightPriceScale: {
+            borderColor: "rgba(255, 255, 255, 0.1)",
+        },
+    });
+
+    // Candlestick Series
+    const candleSeries = chartInstance.addCandlestickSeries({
+        upColor: "#34d399",
+        downColor: "#f87171",
+        borderVisible: false,
+        wickUpColor: "#34d399",
+        wickDownColor: "#f87171",
+    });
+    candleSeries.setData(ohlcData);
+
+    // Volume Series (Overlay)
+    const volumeSeries = chartInstance.addHistogramSeries({
+        priceFormat: {
+            type: "volume",
+        },
+        priceScaleId: "", // Set as an overlay
+        scaleMargins: {
+            top: 0.8,
+            bottom: 0,
+        },
+    });
+
+    // Map volume colors
+    const volumeData = ohlcData.map(d => ({
+        time: d.time,
+        value: d.volume,
+        color: d.close >= d.open ? "rgba(52, 211, 153, 0.3)" : "rgba(248, 113, 113, 0.3)",
+    }));
+    volumeSeries.setData(volumeData);
+
+    // Markers for VPA
+    const markers = [];
+    if (vpaData && vpaData.length > 0) {
+        const lastTime = ohlcData[ohlcData.length - 1].time;
+        vpaData.forEach(vpa => {
+            markers.push({
+                time: lastTime,
+                position: vpa.bias === "Bullish" ? "belowBar" : "aboveBar",
+                color: vpa.color === "green" ? "#34d399" : vpa.color === "red" ? "#f87171" : "#fbbf24",
+                shape: vpa.bias === "Bullish" ? "arrowUp" : "arrowDown",
+                text: vpa.name,
+            });
+        });
+    }
+    candleSeries.setMarkers(markers);
+
+    // Resize Handler
+    new ResizeObserver(entries => {
+        if (entries.length === 0 || entries[0].target !== container) { return; }
+        const newRect = entries[0].contentRect;
+        chartInstance.applyOptions({ width: newRect.width, height: newRect.height });
+    }).observe(container);
+}
+
+/* --- JOURNAL LOGIC --- */
+const journalModal = document.getElementById("journalModal");
+const journalBtn = document.getElementById("journalBtn");
+const closeJournal = document.getElementById("closeJournal");
+const saveTradeBtn = document.getElementById("saveTradeBtn");
+
+if (journalBtn) {
+    journalBtn.addEventListener("click", () => {
+        journalModal.classList.remove("hidden");
+        loadJournal();
+    });
+}
+
+if (closeJournal) {
+    closeJournal.addEventListener("click", () => {
+        journalModal.classList.add("hidden");
+    });
+}
+
+if (saveTradeBtn) {
+    saveTradeBtn.addEventListener("click", async () => {
+        const ticker = document.getElementById("tickerInput").value;
+        const entryText = document.getElementById("tpEntry").textContent;
+        const stopText = document.getElementById("tpStop").textContent;
+        const targetText = document.getElementById("tpTarget").textContent;
+        const sharesText = document.getElementById("sizerResult").textContent;
+
+        // Helper to parse price string
+        const parsePrice = (str) => {
+            const match = str.match(/\$?([\d,]+\.?\d*)/);
+            return match ? parseFloat(match[1].replace(",", "")) : 0.0;
+        }
+
+        const payload = {
+            ticker: ticker,
+            action: "LONG", // Default for now
+            entry_price: parsePrice(entryText.split("-")[0]),
+            shares: parseInt(sharesText) || 0,
+            stop_loss: parsePrice(stopText),
+            target: parsePrice(targetText),
+            psych_checked: window.psychChecked || false,
+        };
+
+        try {
+            saveTradeBtn.innerHTML = "<i class=\"fas fa-spinner fa-spin\"></i> Saving...";
+            const res = await fetch("/api/journal", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                saveTradeBtn.innerHTML = "<i class=\"fas fa-check\"></i> Saved!";
+                setTimeout(() => saveTradeBtn.innerHTML = "<i class=\"fas fa-save\"></i> Save to Journal", 2000);
+            } else {
+                saveTradeBtn.innerHTML = "Error";
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+}
+
+async function loadJournal() {
+    try {
+        const res = await fetch("/api/journal");
+        const trades = await res.json();
+        const tbody = document.getElementById("journalTableBody");
+        tbody.innerHTML = "";
+
+        let wins = 0;
+        let psychCount = 0;
+
+        trades.forEach(t => {
+            const tr = document.createElement("tr");
+            tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+            tr.innerHTML = `
+                <td style="padding:0.6rem;">${t.date}</td>
+                <td style="padding:0.6rem; font-weight:bold; color:#e2e8f0;">${t.ticker}</td>
+                <td style="padding:0.6rem;"><span class="tag" style="background:rgba(52, 211, 153, 0.2); color:#34d399;">${t.action}</span></td>
+                <td style="padding:0.6rem;">$${t.entry.toFixed(2)}</td>
+                <td style="padding:0.6rem;">$${((t.entry - (t.stop_loss || 0)) * t.shares).toFixed(0)}</td>
+                <td style="padding:0.6rem;">${t.psych ? "<i class=\"fas fa-check-circle\" style=\"color:#60a5fa;\"></i>" : "<span style=\"color:#94a3b8\">&ndash;</span>"}</td>
+                <td style="padding:0.6rem;">${t.status}</td>
+            `;
+            tbody.appendChild(tr);
+
+            if (t.psych) psychCount++;
+        });
+
+        document.getElementById("totalTrades").textContent = trades.length;
+        document.getElementById("psychScore").textContent = trades.length > 0 ? Math.round((psychCount / trades.length) * 100) + "%" : "--%";
+
+    } catch (e) {
+        console.error(e);
+    }
+}
