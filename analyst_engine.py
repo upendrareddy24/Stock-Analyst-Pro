@@ -60,7 +60,20 @@ class AnalystEngine:
             "options_intel": options_intel,
             "patterns": self._detect_chart_patterns(df),
             "vpa_analysis": self._detect_vpa_patterns(df),
-            "chart_data": df.tail(150).reset_index().apply(lambda x: {
+            "chart_data": self._prepare_chart_data(df)
+        }
+
+    def _prepare_chart_data(self, df: pd.DataFrame) -> List[Dict[str, Any]]:
+        """Helper to safely format chart data."""
+        try:
+            # Create a copy to avoid SettingWithCopy warnings
+            chart_df = df.tail(150).copy()
+            chart_df = chart_df.reset_index()
+            
+            # Ensure the first column (date) is named 'Date'
+            chart_df.columns.values[0] = 'Date'
+            
+            return chart_df.apply(lambda x: {
                 "time": x['Date'].strftime('%Y-%m-%d'),
                 "open": x['Open'],
                 "high": x['High'],
@@ -68,7 +81,9 @@ class AnalystEngine:
                 "close": x['Close'],
                 "volume": x['Volume']
             }, axis=1).tolist()
-        }
+        except Exception as e:
+            print(f"Chart Data Error: {e}")
+            return []
 
     def _generate_priority(self, results: Dict[str, Any], strategies: List[Dict[str, Any]]) -> Dict[str, Any]:
         buy_count = sum(1 for p in results.values() if "Buy" in p['rating'])
