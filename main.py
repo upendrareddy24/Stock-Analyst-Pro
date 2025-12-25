@@ -68,7 +68,10 @@ def analyze():
         news = orchestrator.get_ticker_news(ticker)
         options = orchestrator.get_options_intel(ticker)
         benchmark_df = orchestrator.get_stock_data("SPY")
+        vix_df = orchestrator.get_stock_data("^VIX")
+        
         analysis = engine.analyze_ticker(ticker, df, news, options, benchmark_df)
+        analysis['market_climate'] = engine._analyze_market_climate(benchmark_df, vix_df)
         
         # --- SHARED PERSISTENCE ---
         # 1. Update Global History

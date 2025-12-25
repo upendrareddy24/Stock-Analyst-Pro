@@ -1270,3 +1270,12 @@ h3 i {
 .ticker-stats { text-align: right; }
 .ticker-score { font-size: 0.85rem; font-weight: 800; color: var(--accent-blue); }
 .ticker-label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.8; }
+
+
+/* --- CHECKLIST --- */
+.checklist-container { display: flex; flex-direction: column; gap: 0.8rem; }
+.check-item { display: flex; align-items: center; gap: 0.8rem; background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+.check-item:hover { background: rgba(255,255,255,0.1); }
+.psych-check { accent-color: #34d399; width: 1.2rem; height: 1.2rem; cursor: pointer; }
+.check-item span { color: #e2e8f0; font-size: 0.85rem; line-height: 1.4; }
+.check-item:has(input:checked) { background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); }

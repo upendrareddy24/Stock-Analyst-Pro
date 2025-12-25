@@ -56,8 +56,10 @@ class AnalystEngine:
             "personas": results,
             "actionable_strategies": actionable_strategies,
             "recent_news": news[:5] if news else [],
+            "recent_news": news[:5] if news else [],
             "options_intel": options_intel,
-            "patterns": self._detect_chart_patterns(df)
+            "patterns": self._detect_chart_patterns(df),
+            "vpa_analysis": self._detect_vpa_patterns(df)
         }
 
     def _generate_priority(self, results: Dict[str, Any], strategies: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -687,6 +689,93 @@ class AnalystEngine:
             })
 
         return patterns
+
+    def _analyze_market_climate(self, spy_df: pd.DataFrame, vix_data: pd.DataFrame = None) -> Dict[str, Any]:
+        """
+        Analyzes the broader market context using SPY trend and VIX volatility.
+        Returns a 'Traffic Light' status: Green (Aggressive), Yellow (Caution), Red (Defense).
+        """
+        if spy_df is None or spy_df.empty:
+            return {"status": "Unknown", "color": "grey", "reason": "Market Data Unavailable"}
+
+        current_price = spy_df['Close'].iloc[-1]
+        sma50 = spy_df['Close'].rolling(window=50).mean().iloc[-1]
+        sma200 = spy_df['Close'].rolling(window=200).mean().iloc[-1]
+        
+        # Volatility check
+        vix_val = 20 # Default neutral if missing
+        if vix_data is not None and not vix_data.empty:
+            vix_val = vix_data['Close'].iloc[-1]
+            
+        # Logic: Traffic Light System
+        if current_price > sma50 and vix_val < 20:
+            return {
+                "status": "Aggressive Growth",
+                "color": "green",
+                "description": "Market is in a confirmed uptrend with low volatility. Buy breakouts confidentally.",
+                "details": f"SPY > SMA50 (${sma50:.2f}) | VIX: {vix_val:.2f}"
+            }
+        elif current_price < sma200 or vix_val > 25:
+            return {
+                "status": "Correction / Defense",
+                "color": "red",
+                "description": "Major trend damage or high fear. Cash is a position. Avoid new longs.",
+                "details": f"SPY < SMA200 (${sma200:.2f}) or VIX Spiking ({vix_val:.2f})"
+            }
+        else:
+             return {
+                "status": "Caution / choppy",
+                "color": "yellow",
+                "description": "Mixed signals. Market is indecisive. Reduce position sizing.",
+                "details": f"SPY between SMAs or VIX elevated ({vix_val:.2f})"
+            }
+
+    def _detect_vpa_patterns(self, df: pd.DataFrame) -> List[Dict[str, str]]:
+        """Detects Volume Price Analysis (VPA) anomalies."""
+        signals = []
+        if len(df) < 20: return []
+        
+        current = df.iloc[-1]
+        prev = df.iloc[-2]
+        avg_vol = df['Volume'].tail(20).mean()
+        
+        # Calculate Spread (End - Low vs High - Low) relative to body size
+        spread = current['High'] - current['Low']
+        body = abs(current['Close'] - current['Open'])
+        
+        # 1. Churning (High Effort, No Result)
+        # High Volume (> 1.5x avg), Small Spread (Doji-like or small body), at Highs
+        if current['Volume'] > avg_vol * 1.5 and spread < (df['High'].tail(10).mean() - df['Low'].tail(10).mean()) * 0.6:
+            signals.append({
+                "name": "Churning",
+                "bias": "Bearish",
+                "color": "red",
+                "description": "High volume with little price progress. Smart money potential selling."
+            })
+            
+        # 2. Stopping Volume (High Effort to Stop Downmove)
+        # Down day, High Volume, Long lower wick (Hammer) or Small Spread after drop
+        if current['Close'] < prev['Close'] and current['Volume'] > avg_vol * 1.5:
+            # Check for Hammer candle (Lower wick > 2x body)
+            lower_wick = min(current['Open'], current['Close']) - current['Low']
+            if lower_wick > body * 2:
+                signals.append({
+                    "name": "Stopping Volume",
+                    "bias": "Bullish",
+                    "color": "green",
+                    "description": "High volume absorption on weakness. Smart money buying the dip."
+                })
+        
+        # 3. No Demand (Up Candle, Low Vol)
+        if current['Close'] > prev['Close'] and current['Volume'] < avg_vol * 0.7:
+             signals.append({
+                "name": "No Demand",
+                "bias": "Bearish",
+                "color": "orange",
+                "description": "Price rising on weak volume. Lack of professional interest."
+            })
+
+        return signals
 
 if __name__ == "__main__":
     import sys

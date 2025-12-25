@@ -137,7 +137,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.priority) {
             document.getElementById('priorityAction').textContent = data.priority.action;
             document.getElementById('priorityReasoning').textContent = data.priority.reasoning;
+            document.getElementById('priorityReasoning').textContent = data.priority.reasoning;
             document.getElementById('priorityConfidence').textContent = data.priority.confidence;
+        }
+
+        // --- MARKET CLIMATE RENDER ---
+        const radar = document.getElementById('marketRadar');
+        if (data.market_climate) {
+            radar.style.display = 'flex';
+            const status = document.getElementById('climateText');
+            const icon = document.getElementById('climateIcon');
+
+            status.textContent = data.market_climate.status;
+            icon.style.color = data.market_climate.color === 'green' ? '#34d399' : data.market_climate.color === 'red' ? '#f87171' : '#fbbf24';
+            status.style.color = icon.style.color;
+
+            radar.title = data.market_climate.description + '\n' + data.market_climate.details;
         }
 
         // --- TREND ALIGNMENT RENDER ---
@@ -295,6 +310,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 `).join('');
             } else if (pSection) {
                 pSection.style.display = 'none';
+            }
+
+            // --- VPA RENDER ---
+            const vSection = document.getElementById('vpaSection');
+            const vList = document.getElementById('vpaList');
+            if (data.vpa_analysis && data.vpa_analysis.length > 0) {
+                vSection.style.display = 'block';
+                vList.innerHTML = data.vpa_analysis.map(v => `
+                    <div class="pattern-item" style="background: rgba(0,0,0,0.2); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(236, 72, 153, 0.2);">
+                        <h5 style="font-size: 0.7rem; color: #fbcfe8; margin: 0;">${v.name} <span class="mini-consensus" style="font-size:0.5rem; background:rgba(255,255,255,0.1);">${v.bias}</span></h5>
+                        <p style="font-size: 0.6rem; color: #94a3b8; margin: 0.2rem 0 0 0;">${v.description}</p>
+                    </div>
+                `).join('');
+            } else if (vSection) {
+                vSection.style.display = 'none';
             }
         }
 
