@@ -59,7 +59,15 @@ class AnalystEngine:
             "recent_news": news[:5] if news else [],
             "options_intel": options_intel,
             "patterns": self._detect_chart_patterns(df),
-            "vpa_analysis": self._detect_vpa_patterns(df)
+            "vpa_analysis": self._detect_vpa_patterns(df),
+            "chart_data": df.tail(150).reset_index().apply(lambda x: {
+                "time": x['Date'].strftime('%Y-%m-%d'),
+                "open": x['Open'],
+                "high": x['High'],
+                "low": x['Low'],
+                "close": x['Close'],
+                "volume": x['Volume']
+            }, axis=1).tolist()
         }
 
     def _generate_priority(self, results: Dict[str, Any], strategies: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -479,30 +487,62 @@ class AnalystEngine:
             
         # Calculate ATR for volatility-based levels
         atr = (df['High'] - df['Low']).tail(14).mean()
+    def _generate_trade_plan(self, df: pd.DataFrame, consensus: str, signal_price: float) -> Dict[str, Any]:
+        """Creates a Livermore-style pyramiding plan with ATR-based stops."""
+        current_price = df['Close'].iloc[-1]
+        atr = self._calculate_atr(df)
         
-        # Strategy specific tweaks
-        is_momentum = any(s['type'] in ["High Volume Breakout", "High Volatility Speculation"] for s in strategies)
-        is_value = any(s['type'] in ["Support Pullback", "Long Term Value / Reversal"] for s in strategies)
+        # Volatility Sizing: Stop is 2x ATR for wiggle room
+        stop_dist = atr * 2
         
-        stop_buffer = 1.5 * atr if is_momentum else 2.0 * atr # Wider stop for value (catch falling knife), tighter for momentum
-        target_buffer = 3.0 * atr if is_momentum else 4.0 * atr # High reward targeting
+        if "Bullish" in consensus:
+            entry_1 = current_price # Pilot Position (30%)
+            entry_2 = current_price + (atr * 0.5) # Confirmation (50%)
+            stop_loss = current_price - stop_dist
+            target = current_price + (stop_dist * 3) # 1:3 Risk/Reward
+            
+            return {
+                "action": "LONG",
+                "entry_zone": f"${entry_1:.2f} - ${entry_1*1.01:.2f}",
+                "pyramiding": [
+                    {"stage": "Pilot", "size": "30%", "price": f"${entry_1:.2f}"},
+                    {"stage": "Add-on", "size": "50%", "price": f"${entry_2:.2f}"},
+                ],
+                "stop_loss": f"${stop_loss:.2f}",
+                "target": f"${target:.2f}",
+                "risk_per_share": stop_dist
+            }
         
-        entry_low = current_price - (atr * 0.2)
-        entry_high = current_price + (atr * 0.2)
+        elif "Bearish" in consensus:
+            # Shorting Logic
+            entry_1 = current_price
+            entry_2 = current_price - (atr * 0.5)
+            stop_loss = current_price + stop_dist
+            target = current_price - (stop_dist * 3)
+            
+            return {
+                "action": "SHORT",
+                "entry_zone": f"${entry_1:.2f}",
+                "pyramiding": [
+                    {"stage": "Pilot", "size": "30%", "price": f"${entry_1:.2f}"},
+                    {"stage": "Add-on", "size": "50%", "price": f"${entry_2:.2f}"},
+                ],
+                "stop_loss": f"${stop_loss:.2f}",
+                "target": f"${target:.2f}",
+                "risk_per_share": stop_dist
+            }
+            
+        return None
+
+    def _calculate_atr(self, df: pd.DataFrame, period: int = 14) -> float:
+        """Calculates Average True Range for volatility sizing."""
+        high_low = df['High'] - df['Low']
+        high_close = (df['High'] - df['Close'].shift()).abs()
+        low_close = (df['Low'] - df['Close'].shift()).abs()
         
-        stop_loss = current_price - stop_buffer
-        target_price = current_price + target_buffer
-        
-        risk = current_price - stop_loss
-        reward = target_price - current_price
-        rr_ratio = round(reward / risk, 1) if risk > 0 else 0
-        
-        return {
-            "entry_zone": f"${entry_low:.2f} - ${entry_high:.2f}",
-            "stop_loss": f"${stop_loss:.2f}",
-            "target": f"${target_price:.2f}",
-            "risk_reward": f"1:{rr_ratio}"
-        }
+        ranges = pd.concat([high_low, high_close, low_close], axis=1)
+        true_range = ranges.max(axis=1)
+        return true_range.tail(period).mean()
 
     def _calculate_squeeze(self, df: pd.DataFrame) -> Dict[str, Any]:
         """

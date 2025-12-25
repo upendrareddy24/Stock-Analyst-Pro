@@ -1,7 +1,7 @@
 import os
 import re
 from flask import Flask, request, jsonify, send_from_directory
-from collaborative_models import db, SharedHistory, BullishRadar, PersonaPick, MarketIntelligence
+from collaborative_models import db, SharedHistory, BullishRadar, PersonaPick, MarketIntelligence, TradeJournal
 from analyst_engine import AnalystEngine
 from data_orchestrator import DataOrchestrator
 import threading
@@ -163,6 +163,31 @@ def sector_scout():
         sector_results.sort(key=lambda x: x['score'], reverse=True)
         results[sector] = sector_results[:5]
     return jsonify(results)
+
+@app.route('/api/journal', methods=['GET', 'POST'])
+def journal():
+    if request.method == 'POST':
+        data = request.json
+        try:
+            new_trade = TradeJournal(
+                ticker=data.get('ticker'),
+                action=data.get('action'),
+                entry_price=data.get('entry_price'),
+                shares=data.get('shares'),
+                stop_loss=data.get('stop_loss'),
+                target=data.get('target'),
+                psych_checked=data.get('psych_checked', False)
+            )
+            db.session.add(new_trade)
+            db.session.commit()
+            return jsonify({"message": "Trade saved successfully", "id": new_trade.id}), 201
+        except Exception as e:
+            return jsonify({"error": str(e)}), 400
+            
+    else:
+        # GET: List recent trades
+        trades = TradeJournal.query.order_by(TradeJournal.timestamp.desc()).limit(20).all()
+        return jsonify([t.to_dict() for t in trades])
 
 # --- AUTONOMOUS SCANNER ENGINE ---
 def run_autonomous_scanner():

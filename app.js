@@ -155,6 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
             radar.title = data.market_climate.description + '\n' + data.market_climate.details;
         }
 
+        // --- SMART CHART RENDER ---
+        if (data.chart_data && window.LightweightCharts) {
+            renderSmartChart(data.chart_data, data.vpa_analysis, data.patterns);
+        }
+
         // --- TREND ALIGNMENT RENDER ---
         const mtf = data.technical_indicators.mtf_alignment;
         const rs = data.technical_indicators.relative_strength;
@@ -223,6 +228,22 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('tpEntry').textContent = data.trade_plan.entry_zone;
             document.getElementById('tpTarget').textContent = data.trade_plan.target;
             document.getElementById('tpStop').textContent = data.trade_plan.stop_loss;
+
+            // Pyramiding Logic
+            const pSection = document.getElementById('pyramidSection');
+            if (data.trade_plan.pyramiding) {
+                pSection.classList.remove('hidden');
+                const p1 = data.trade_plan.pyramiding[0];
+                const p2 = data.trade_plan.pyramiding[1];
+                document.getElementById('pyramidEntry1').textContent = `${p1.price} (${p1.size})`;
+                document.getElementById('pyramidEntry2').textContent = `${p2.price} (${p2.size})`;
+
+                // Show Risk/Share
+                document.getElementById('tpRisk').textContent = `$${data.trade_plan.risk_per_share.toFixed(2)}`;
+            } else {
+                pSection.classList.add('hidden');
+            }
+
             tradeCard.classList.remove('hidden');
 
             // Initial Position Sizer Calculation
