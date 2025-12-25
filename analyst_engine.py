@@ -607,11 +607,20 @@ class AnalystEngine:
         current_vwap = vwap[-1]
         diff = ((current - current_vwap) / current_vwap) * 100
         
+        # Handle Date retrieval (Index vs Column)
+        if 'Date' in df.columns:
+            dates = df['Date']
+        else:
+            dates = df.index
+            
+        # Ensure dates are strings for JSON
+        dates = [d.strftime('%Y-%m-%d') if hasattr(d, 'strftime') else str(d) for d in dates]
+        
         return {
             "value": round(current_vwap, 2),
             "deviation": f"{round(diff, 2)}%",
             "history": [round(v, 2) for v in vwap[-40:]], # Sending last 40 points for chart matching
-            "full_history": [{"time": t, "value": round(v, 2)} for t, v in zip(df['Date'], vwap)] # For plotting line
+            "full_history": [{"time": t, "value": round(v, 2)} for t, v in zip(dates, vwap)] # For plotting line
         }
 
     def _calculate_squeeze(self, df: pd.DataFrame) -> Dict[str, Any]:
