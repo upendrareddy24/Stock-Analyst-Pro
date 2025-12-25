@@ -347,27 +347,30 @@ document.addEventListener('DOMContentLoaded', () => {
             if (adxVal < 20) adxColor = '#f87171'; // Weak Trend
 
             document.getElementById('vitalADX').textContent = adxVal;
-            document.getElementById('vitalADXbar').style.width = `${Math.min(adxVal, 100)}%`;
-            document.getElementById('vitalADXbar').style.backgroundColor = adxColor;
+            document.getElementById('vitalADXBar').style.width = `${Math.min(adxVal, 100)}%`;
+            document.getElementById('vitalADXBar').style.backgroundColor = adxColor;
             document.getElementById('vitalADXStatus').textContent = tech.adx.status;
 
             adxCard.style.border = `1px solid ${adxColor}`;
             adxCard.style.boxShadow = `0 0 10px ${adxColor}20`;
 
             // VWAP Deviation
-            const vwapDevStr = tech.vwap.deviation;
-            const vwapDevNum = parseFloat(vwapDevStr.replace('%', ''));
-            const vwapCard = document.getElementById('cardVWAP');
-            let vwapColor = '#fbbf24';
-            if (vwapDevNum > 0) vwapColor = '#34d399'; // Bullish
-            if (vwapDevNum < 0) vwapColor = '#f87171'; // Bearish
+            // Check if VWAP data exists to avoid crash on cached data
+            if (tech.vwap && tech.vwap.deviation) {
+                const vwapDevStr = tech.vwap.deviation;
+                const vwapDevNum = parseFloat(vwapDevStr.replace('%', ''));
+                const vwapCard = document.getElementById('cardVWAP');
+                let vwapColor = '#fbbf24';
+                if (vwapDevNum > 0) vwapColor = '#34d399'; // Bullish
+                if (vwapDevNum < 0) vwapColor = '#f87171'; // Bearish
 
-            document.getElementById('vitalVWAP').textContent = vwapDevStr;
-            document.getElementById('vitalVWAP').style.color = vwapColor;
-            document.getElementById('vitalVWAPDetail').textContent = `vs Avg Price: $${tech.vwap.value}`;
+                document.getElementById('vitalVWAP').textContent = vwapDevStr;
+                document.getElementById('vitalVWAP').style.color = vwapColor;
+                document.getElementById('vitalVWAPDetail').textContent = `vs Avg Price: $${tech.vwap.value}`;
 
-            vwapCard.style.border = `1px solid ${vwapColor}`;
-            vwapCard.style.boxShadow = `0 0 10px ${vwapColor}20`;
+                vwapCard.style.border = `1px solid ${vwapColor}`;
+                vwapCard.style.boxShadow = `0 0 10px ${vwapColor}20`;
+            }
 
 
             // Options Intel
