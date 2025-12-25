@@ -231,17 +231,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Pyramiding Logic
             const pSection = document.getElementById('pyramidSection');
-            if (data.trade_plan.pyramiding) {
-                pSection.classList.remove('hidden');
-                const p1 = data.trade_plan.pyramiding[0];
-                const p2 = data.trade_plan.pyramiding[1];
-                document.getElementById('pyramidEntry1').textContent = `${p1.price} (${p1.size})`;
-                document.getElementById('pyramidEntry2').textContent = `${p2.price} (${p2.size})`;
+            if (pSection) {
+                if (data.trade_plan.pyramiding) {
+                    pSection.classList.remove('hidden');
+                    const p1 = data.trade_plan.pyramiding[0];
+                    const p2 = data.trade_plan.pyramiding[1];
+                    document.getElementById('pyramidEntry1').textContent = `${p1.price} (${p1.size})`;
+                    document.getElementById('pyramidEntry2').textContent = `${p2.price} (${p2.size})`;
 
-                // Show Risk/Share
-                document.getElementById('tpRisk').textContent = `$${data.trade_plan.risk_per_share.toFixed(2)}`;
-            } else {
-                pSection.classList.add('hidden');
+                    // Show Risk/Share
+                    const riskEl = document.getElementById('tpRisk');
+                    if (riskEl) riskEl.textContent = `$${data.trade_plan.risk_per_share.toFixed(2)}`;
+                } else {
+                    pSection.classList.add('hidden');
+                }
             }
 
             tradeCard.classList.remove('hidden');
