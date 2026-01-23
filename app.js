@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span style="font-size:0.65rem; color:var(--accent-blue); font-weight:700;">${item.master_score || 0} pts</span>
                     </div>
                 </div>
-                <div class="date">${item.date}</div>
+                <div class="date">${formatDate(item.date)}</div>
             `;
 
             div.addEventListener('click', () => {
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h4>${item.ticker}</h4>
                     <span class="mini-consensus rating-pill ${badgeClass}">${item.consensus.split(' ')[0]}</span>
                 </div>
-                <div class="date">${item.date}</div>
+                <div class="date">${formatDate(item.date)}</div>
             `;
 
             div.addEventListener('click', () => {
@@ -135,10 +135,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update Priority Section
         if (data.priority) {
-            document.getElementById('priorityAction').textContent = data.priority.action;
-            document.getElementById('priorityReasoning').textContent = data.priority.reasoning;
+            let actionText = data.priority.action;
+            if (actionText.includes("Mixed signals") || actionText.includes("Not yet aligned")) {
+                actionText = "Signals are mixed across styles. Treat as watchlist candidate: consider alerts, not a full-sized entry.";
+            }
+            document.getElementById('priorityAction').textContent = actionText;
             document.getElementById('priorityReasoning').textContent = data.priority.reasoning;
             document.getElementById('priorityConfidence').textContent = data.priority.confidence;
+
+            // Update Trade Bias Banner
+            const biasVal = document.getElementById('tradeBiasValue');
+            const biasContainer = document.getElementById('tradeBiasContainer');
+            let biasText = "Neutral / Mixed – watchlist, not an A+ setup yet.";
+            let biasColor = "var(--accent-amber)";
+
+            if (data.master_score && data.master_score.value > 70) {
+                biasText = "Bullish – Strong technical and fundamental alignment.";
+                biasColor = "var(--accent-green)";
+            } else if (data.master_score && data.master_score.value < 40) {
+                biasText = "Bearish / Caution – Multiple risk factors detected.";
+                biasColor = "var(--accent-red)";
+            }
+
+            biasVal.textContent = biasText;
+            biasContainer.style.borderColor = biasColor;
+            biasVal.style.color = biasColor;
         }
 
         // --- MARKET CLIMATE RENDER ---
@@ -268,11 +289,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.technical_indicators) {
             const tech = data.technical_indicators;
 
+            // Snapshot Header
+            const snapshotEl = document.getElementById('snapshotText');
+            let snapshot = "Normal Volatility, Neutral RSI";
+            if (tech.adx.value > 25) snapshot = "Strong trend, " + snapshot;
+            if (tech.rel_volume.value > 1.2) snapshot = "Elevated volume, " + snapshot;
+            if (tech.macd.status.includes("Bullish")) snapshot = "Bullish momentum, " + snapshot;
+            if (tech.squeeze.status.includes("Squeeze On")) snapshot = "Volatility Squeeze, " + snapshot;
+            snapshotEl.textContent = snapshot + ".";
+
             // Squeeze
             const sqEl = document.getElementById('vitalSqueeze');
             const sqCard = sqEl.closest('.vital-card');
-            sqEl.textContent = tech.squeeze.status;
-            document.getElementById('vitalSqueezeDetail').textContent = tech.squeeze.detail;
+            sqEl.textContent = tech.squeeze.status.replace("OFF", "Off").replace("ON", "On");
+            document.getElementById('vitalSqueezeDetail').textContent = `Volatility: ${tech.squeeze.status.includes('Off') ? 'Normal (no squeeze active)' : 'Squeeze active'}`;
 
             let sqColor = '#94a3b8';
             if (tech.squeeze.color === 'green') sqColor = '#34d399';
@@ -476,7 +506,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h4>${persona}</h4>
                     <span class="rating-pill ${ratingClass}">${result.rating}</span>
                 </div>
-                <ul class="persona-reasons">
+                <p style="font-size: 0.8rem; font-style: italic; color: var(--accent-blue); margin-top: 0.2rem;">
+                    ${translatePersonaAction(persona, result.rating)}
+                </p>
+                <ul class="persona-reasons" style="margin-top: 0.5rem;">
                     ${result.reasons.length > 0 ?
                     result.reasons.map(r => `<li>${r}</li>`).join('') :
                     `<li>Maintaining neutral posture based on current data.</li>`}
@@ -538,18 +571,28 @@ document.addEventListener('DOMContentLoaded', () => {
         newsFeed.innerHTML = '';
         if (data.recent_news && data.recent_news.length > 0) {
             data.recent_news.forEach(item => {
+                const sentiment = item.title.toLowerCase().match(/up|rise|surge|gain|profit|buy|beat|growth|positive/i) ? 'bullish' :
+                    item.title.toLowerCase().match(/down|fall|drop|loss|sell|miss|negative|risk/i) ? 'bearish' : 'mixed';
+                const tag = item.title.toLowerCase().includes('earn') ? 'Earnings' :
+                    item.title.toLowerCase().includes('ai') ? 'AI' :
+                        item.title.toLowerCase().includes('fed') || item.title.toLowerCase().includes('macro') ? 'Macro' : 'News';
+
                 const newsItem = document.createElement('div');
                 newsItem.className = 'news-item glass';
                 newsItem.innerHTML = `
                     <div class="news-info">
+                        <div style="display:flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span class="news-tag tag-${sentiment}">${sentiment}</span>
+                            <span class="news-tag" style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">${tag}</span>
+                        </div>
                         <h4>${item.title}</h4>
                         <p>${item.summary ? item.summary.substring(0, 150) + '...' : 'Recent catalyst update.'}</p>
                     </div>
-        <div class="news-meta">
-            <span class="news-date">${item.date}</span>
-            <a href="${item.url}" target="_blank" class="news-link">Read More <i class="fas fa-external-link-alt"></i></a>
-        </div>
-    `;
+                    <div class="news-meta">
+                        <span class="news-date">${formatDate(item.date)}</span>
+                        <a href="${item.url}" target="_blank" class="news-link">Read More <i class="fas fa-external-link-alt"></i></a>
+                    </div>
+                `;
                 newsFeed.appendChild(newsItem);
             });
         } else {
@@ -952,5 +995,38 @@ function renderSmartChart(ohlcData, vpaData, patterns, tradePlan) {
         const newRect = entries[0].contentRect;
         chartInstance.applyOptions({ width: newRect.width, height: newRect.height });
     }).observe(container);
+}
+
+function translatePersonaAction(persona, rating) {
+    const r = rating.toLowerCase();
+    const actions = {
+        'Growth Maverick': { 'buy': 'Strong momentum trend setup.', 'hold': 'Awaiting breakout confirmation.', 'avoid': 'Trend structure is broken.' },
+        'Macro Strategist': { 'buy': 'Aligned with fiscal tailwinds.', 'hold': 'Macro environment is uncertain.', 'avoid': 'Significant macro headwinds.' },
+        'News Watch': { 'buy': 'Catalyst confirmed by volume.', 'hold': 'Awaiting specific news event.', 'avoid': 'Negative news sentiment detected.' },
+        'Psychology Expert': { 'buy': 'Extreme fear turning to greed.', 'hold': 'Market sentiment is balanced.', 'avoid': 'Hyper-euphoria; topping risk.' },
+        'Quant Master': { 'buy': 'Statistical edge is high.', 'hold': 'Mean reversion in progress.', 'avoid': 'Low probability setup.' },
+        'Trend Follower': { 'buy': 'Classic bull trend configuration.', 'hold': 'Price is range-bound.', 'avoid': 'Bearish trend established.' },
+        'Value Sage': { 'buy': 'Deep value with safety margin.', 'hold': 'Fairly valued at current levels.', 'avoid': 'Severely overvalued.' }
+    };
+
+    const ratingKey = r.includes('buy') ? 'buy' : r.includes('avoid') || r.includes('sell') ? 'avoid' : 'hold';
+    return (actions[persona] && actions[persona][ratingKey]) || 'Maintaining focused neutral posture.';
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '--';
+    try {
+        const date = new Date(dateStr);
+        if (isNaN(date)) return dateStr; // Return raw string if parsing fails
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    } catch (e) {
+        return dateStr;
+    }
 }
 

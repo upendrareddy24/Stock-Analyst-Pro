@@ -24,61 +24,76 @@
                 <i class="fas fa-brain-circuit"></i>
                 <h1>Analyst Mastermind</h1>
             </div>
+            <p class="value-prop">Institutional-grade trade intelligence, momentum signals, and real-time catalysts for
+                any ticker.</p>
 
-            <div id="marketRadar" class="market-radar glass"
-                style="display:none; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); margin-right: auto; margin-left: 2rem;">
-                <i id="climateIcon" class="fas fa-traffic-light" style="color: #fbbf24;"></i>
-                <div style="display:flex; flex-direction:column; line-height: 1;">
-                    <span
-                        style="font-size: 0.55rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Market
-                        Climate</span>
-                    <span id="climateText"
-                        style="font-size: 0.75rem; font-weight: 700; color: #fbbf24;">Loading...</span>
+            <div class="hero-card glass">
+                <div class="hero-workflow">
+                    <div id="marketRadar" class="market-radar"
+                        style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--border);">
+                        <i id="climateIcon" class="fas fa-traffic-light" style="color: var(--accent-amber);"></i>
+                        <div style="display:flex; flex-direction:column; line-height: 1; text-align: left;">
+                            <span
+                                style="font-size: 0.55rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Market
+                                Climate</span>
+                            <span id="climateText"
+                                style="font-size: 0.75rem; font-weight: 700; color: var(--accent-amber);">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="ticker-input-container">
+                        <input type="text" id="tickerInput" placeholder="Enter ticker: AAPL, NVDA, INTC..."
+                            autocomplete="off">
+                        <span class="input-hint">Press Enter ↵ or click Analyze to run analysis</span>
+                        <div id="autocompleteResults" class="autocomplete-dropdown hidden"></div>
+                    </div>
+
+                    <button id="analyzeBtn" class="analyze-btn">Analyze <i class="fas fa-microchip"></i></button>
+                    <button id="exportReportBtn" class="export-analysis-btn" title="Download this analysis">
+                        <i class="fas fa-file-download"></i> Export Analysis
+                    </button>
                 </div>
-            </div>
-            <div class="search-bar">
-                <div class="search-container">
-                    <input type="text" id="tickerInput" placeholder="Enter Ticker (e.g. NVDA)" value="AAPL"
-                        autocomplete="off">
-                    <div id="autocompleteResults" class="autocomplete-dropdown hidden"></div>
-                </div>
-                <button id="analyzeBtn">Analyze <i class="fas fa-microchip"></i></button>
-                <button id="sectorScoutBtn" class="scout-btn" title="Sector Leaderboard"><i
-                        class="fas fa-chart-pie"></i> Sector Scout</button>
             </div>
         </header>
 
         <div class="workspace-grid">
-            <aside class="history-sidebar glass">
-                <div class="bullish-section">
-                    <h3><i class="fas fa-gem"></i> Bullish Radar</h3>
-                    <div id="bullishList" class="history-list">
-                        <p class="empty-msg">No recent gems.</p>
-                    </div>
-                </div>
-
-                <div class="intelligence-section">
-                    <div class="section-header-compact">
-                        <h3><i class="fas fa-satellite-dish"></i> Intelligence Feed</h3>
-                        <div id="scannerStatus" class="scanner-status pulsate" title="AI Market Scanner: Running">
-                            <i class="fas fa-microchip"></i> Live
-                        </div>
-                    </div>
-                    <div id="intelligenceList" class="history-list">
-                        <p class="empty-msg">Scanning for market leaders...</p>
-                    </div>
-                </div>
-
-                <div class="recent-section">
-                    <h3><i class="fas fa-history"></i> Recent Analysis</h3>
-                    <div id="historyList" class="history-list">
-                        <!-- History items will be injected here -->
-                        <p class="empty-msg">No recent history.</p>
-                    </div>
-                </div>
-            </aside>
-
             <main id="dashboard" class="hidden">
+                <div class="active-ticker-header glass"
+                    style="margin-bottom: 1.5rem; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 id="tickerName" style="font-size: 2.5rem; font-family: var(--font-mono); margin: 0;">AAPL
+                        </h2>
+                        <span id="tickerPrice"
+                            style="font-size: 1.5rem; color: var(--accent-green); font-weight: 700;">$150.00</span>
+                    </div>
+                    <div class="consensus-badge" id="overallConsensus"
+                        style="padding: 0.5rem 1.5rem; border-radius: 100px; font-weight: 700;">
+                        Strong Bullish Consensus
+                    </div>
+                </div>
+
+                <div id="tradeBiasContainer" class="trade-bias-banner">
+                    <i class="fas fa-compass"></i>
+                    <span>Trade Bias: <strong id="tradeBiasValue">Neutral / Mixed – watchlist candidate</strong></span>
+                </div>
+
+                <div class="onboarding-card glass" style="margin-bottom: 2rem; padding: 1.5rem; text-align: left;">
+                    <h4 style="margin-bottom: 0.8rem; font-size: 0.9rem; color: var(--accent-blue);"><i
+                            class="fas fa-lightbulb"></i> How to Use Analyst Mastermind</h4>
+                    <ul
+                        style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.85rem; color: var(--text-secondary);">
+                        <li style="display: flex; gap: 0.8rem;"><strong style="color: var(--text-primary);">1. Check the
+                                Score:</strong> Our proprietary 100-point score quantifies the total setup quality
+                            across all disciplines.</li>
+                        <li style="display: flex; gap: 0.8rem;"><strong style="color: var(--text-primary);">2. Consult
+                                the Council:</strong> Different personas (Growth, Value, Quant) provide unique
+                            style-based perspectives.</li>
+                        <li style="display: flex; gap: 0.8rem;"><strong style="color: var(--text-primary);">3. Scan the
+                                Indicators:</strong> Use the "Vital Signs" and "Smart Chart" to confirm technical
+                            alignment before entry.</li>
+                    </ul>
+                </div>
+
                 <section class="priority-section glass" id="priorityCard">
                     <div class="priority-header">
                         <span class="priority-label">Priority Action</span>
@@ -187,6 +202,10 @@
                 <section class="vital-signs-section glass" style="margin-top: 1.5rem; padding: 1rem;">
                     <div class="section-header" style="margin-bottom: 1rem;">
                         <h3><i class="fas fa-heartbeat"></i> Technical Vital Signs</h3>
+                        <div id="technicalSnapshot" class="setup-snapshot-header">
+                            Setup Snapshot: <span id="snapshotText" style="color: var(--accent-amber);">Optimizing
+                                indicators...</span>
+                        </div>
                     </div>
                     <div class="vital-grid">
                         <div class="vital-card">
@@ -320,18 +339,6 @@
                     </div>
                 </section>
 
-                <section class="ticker-summary glass">
-                    <div class="ticker-header">
-                        <h2 id="tickerName">AAPL</h2>
-                        <span id="tickerPrice" class="price">$150.00</span>
-                    </div>
-                    <div class="consensus-badge" id="overallConsensus">
-                        Strong Bullish Consensus
-                    </div>
-                    <button id="exportReportBtn" class="export-btn" title="Export Research Report">
-                        <i class="fas fa-file-export"></i> Export
-                    </button>
-                </section>
 
                 <section class="strategies-section">
                     <h3><i class="fas fa-bolt"></i> Strategy Spotlight</h3>
@@ -354,6 +361,42 @@
                     </div>
                 </section>
             </main>
+
+            <aside class="history-sidebar glass">
+                <div class="bullish-section">
+                    <h3><i class="fas fa-gem"></i> Bullish Radar</h3>
+                    <div id="bullishList" class="history-list">
+                        <p class="empty-msg">No recent gems.</p>
+                    </div>
+                </div>
+
+                <div class="intelligence-section">
+                    <div class="section-header-compact"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;"><i class="fas fa-satellite-dish"></i> Intel Feed</h3>
+                        <div id="scannerStatus" class="scanner-status pulsate" title="AI Market Scanner: Running">
+                            <i class="fas fa-microchip"></i> Live
+                        </div>
+                    </div>
+                    <div id="intelligenceList" class="history-list">
+                        <p class="empty-msg">Scanning for market leaders...</p>
+                    </div>
+                </div>
+
+                <div class="recent-section" style="margin-top: 2rem;">
+                    <h3><i class="fas fa-history"></i> Recent Analysis</h3>
+                    <div id="historyList" class="history-list">
+                        <!-- History items will be injected here -->
+                        <p class="empty-msg">No recent history.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <button id="sectorScoutBtn" class="scout-btn" style="width: 100%; border-radius: 8px;">
+                        <i class="fas fa-chart-pie"></i> Sector Scout
+                    </button>
+                </div>
+            </aside>
 
             <div id="loader" class="loader-container hidden">
                 <div class="spinner"></div>
